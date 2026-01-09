@@ -1,0 +1,148 @@
+# AI Agent LLM性能分析器配置文件
+
+# 工作空间配置
+workspace:
+  root_dir: "."
+  models_dir: "workspace/models"
+  sglang_dir: "SGlang"
+  tools_dir: "TOOLS/Auto_Anlyze_tool"
+
+# 默认分析参数
+defaults:
+  # SGlang脚本参数
+  batch_size: [1, 8, 16]
+  input_len: [512, 1024]
+  output_len: [64, 128]
+  temperature: 0.0
+  tp_size: 1
+  trust_device: true
+  
+  # 服务器参数
+  host: "127.0.0.1"
+  port: 30000
+  
+  # 分析参数
+  analysis_type: "auto"  # auto, nsys, ncu
+  script_type: "bench_one_batch_server"  # bench_one_batch_server, launch_server
+  profile_steps: 3
+  profile_by_stage: false
+  max_ncu_kernels: 5
+  
+  # 输出参数
+  show_report: true
+  result_filename_suffix: "benchmark_results.jsonl"
+
+# 性能分析工具配置
+tools:
+  nsys:
+    default_args: ["-t", "cuda,nvtx,osrt", "--cuda-memory-usage=true", "--force-overwrite=true"]
+    timeout: 600  # 秒
+    
+  ncu:
+    default_args: ["--set", "full", "--force-overwrite"]
+    timeout: 600  # 秒
+    
+  integrated:
+    top_k_kernels: 10
+    min_duration_ms: 0.1
+    max_ncu_kernels: 5
+
+# 模型配置映射
+model_mappings:
+  # 常见模型别名到实际路径的映射
+  "llama-7b": "meta-llama/Llama-2-7b-hf"
+  "llama-13b": "meta-llama/Llama-2-13b-hf" 
+  "qwen-7b": "Qwen/Qwen-7B-Chat"
+  "qwen-14b": "Qwen/Qwen-14B-Chat"
+  "chatglm-6b": "THUDM/chatglm-6b"
+  "baichuan-7b": "baichuan-inc/Baichuan-7B"
+  "baichuan-13b": "baichuan-inc/Baichuan-13B-Chat"
+  "vicuna-7b": "lmsys/vicuna-7b-v1.5"
+  "vicuna-13b": "lmsys/vicuna-13b-v1.5"
+
+# 提示词模式配置
+prompt_patterns:
+  # 模型名称识别模式
+  model_patterns:
+    - r'--model[=\s]+([^\s]+)'
+    - r'模型[：:]\s*([^\s,，]+)'
+    - r'model[：:]\s*([^\s,，]+)'
+    - r'analyze[:\s]+([^\s,，]+)'
+  
+  # 脚本类型识别模式
+  script_patterns:
+    bench_one_batch_server: 
+      - "bench_one_batch_server"
+      - "batch.*server"
+      - "单批次.*服务器"
+      - "benchmarking?"
+    launch_server:
+      - "launch_server" 
+      - "启动.*服务器"
+      - "server.*launch"
+  
+  # 分析类型识别模式
+  analysis_patterns:
+    nsys:
+      - "nsys"
+      - "nsight.*systems?"
+      - "全局.*分析"
+      - "timeline.*分析"
+    ncu:
+      - "ncu"
+      - "nsight.*compute" 
+      - "kernel.*分析"
+      - "算子.*分析"
+      - "深度.*分析"
+    auto:
+      - "集成.*分析"
+      - "综合.*分析"
+      - "auto.*analy"
+      - "完整.*分析"
+
+# 输出配置
+output:
+  # 目录命名模式
+  dir_pattern: "analysis_{model}_{timestamp}"
+  timestamp_format: "%Y%m%d_%H%M%S"
+  
+  # 报告格式
+  report_formats: ["txt", "json", "markdown"]
+  
+  # 可视化设置
+  visualization:
+    dpi: 300
+    format: "png"
+    style: "seaborn"
+    font_family: ["SimHei", "DejaVu Sans"]
+
+# 环境检查
+environment:
+  required_commands:
+    - "nsys"
+    - "ncu" 
+    - "python"
+  
+  required_python_packages:
+    - "pandas"
+    - "matplotlib"
+    - "seaborn"
+    - "numpy"
+    - "requests"
+  
+  gpu_requirements:
+    min_compute_capability: 7.0
+    min_memory_gb: 8
+
+# 日志配置
+logging:
+  level: "INFO"  # DEBUG, INFO, WARNING, ERROR
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  file: null  # 如果不为null，日志会写入文件
+  
+# 错误处理
+error_handling:
+  retry_count: 3
+  timeout_multiplier: 1.5
+  fallback_analysis: true  # 如果主分析失败，是否尝试更简单的分析
+

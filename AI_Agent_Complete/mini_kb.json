@@ -1,0 +1,13 @@
+{
+  "model": "Qwen3-32B",
+  "theoretical": {
+    "prefill_time_s": 0.073,
+    "decode_time_s": 18.25,
+    "dominant_bound_prefill": "compute",
+    "dominant_bound_decode": "memory+compute"
+  },
+  "optimization": {
+    "attention": "enable flash attention",
+    "weight_quant": "consider fp8/int8 for projections"
+  }
+}

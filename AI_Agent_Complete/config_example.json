@@ -1,0 +1,47 @@
+{
+  "sglang_path": "/sgl-workspace/sglang",
+  "models_path": "/workspace/models/Qwen",
+  "server": {
+    "host": "0.0.0.0",
+    "port": 8000
+  },
+  "sglang_service": {
+    "host": "127.0.0.1",
+    "port": 30000
+  },
+  "model_mappings": {
+    "llama-7b": "Llama-2-7b-hf",
+    "llama-13b": "Llama-2-13b-hf",
+    "qwen-7b": "Qwen-7B-Chat",
+    "qwen-14b": "Qwen-14B-Chat",
+    "chatglm-6b": "chatglm-6b"
+  },
+  "analysis_defaults": {
+    "batch_size": [1, 8, 16],
+    "input_len": [128],
+    "output_len": [1],
+    "temperature": 0.0,
+    "tp_size": 1,
+    "profile_steps": 3
+  },
+  "profiling_tools": {
+    "nsys": {
+      "enabled": true,
+      "timeout": 600
+    },
+    "ncu": {
+      "enabled": true,
+      "timeout": 600,
+      "max_kernels": 5
+    }
+  },
+  "output": {
+    "results_dir": "analysis_results",
+    "save_reports": true,
+    "report_formats": ["txt", "json", "markdown"]
+  },
+  "logging": {
+    "level": "INFO",
+    "format": "%(asctime)s - %(levelname)s - %(message)s"
+  }
+}

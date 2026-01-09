@@ -1,0 +1,35 @@
+{
+  "model_info": {
+    "model_name": "llama-7b",
+    "model_path": "meta-llama/Llama-2-7b-hf",
+    "model_type": "decoder",
+    "model_size": "7B",
+    "architecture": "LLaMA", 
+    "parameters": 6738415616,
+    "precision": "fp16"
+  },
+  "analysis_params": {
+    "batch_size": [1, 4, 8, 16],
+    "input_len": [256, 512, 1024],
+    "output_len": [32, 64, 128],
+    "temperature": 0.0,
+    "tp_size": 1,
+    "analysis_type": "auto",
+    "profile_steps": 3
+  },
+  "hardware_info": {
+    "gpu_type": "NVIDIA A100",
+    "gpu_count": 1,
+    "memory_gb": 40,
+    "compute_capability": 8.0,
+    "driver_version": "525.105.17",
+    "cuda_version": "12.0"
+  },
+  "performance_targets": {
+    "target_throughput": 100,
+    "max_latency_ms": 500,
+    "memory_efficiency": 0.8
+  }
+}
+
+

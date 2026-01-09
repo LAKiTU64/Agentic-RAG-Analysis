@@ -1,0 +1,936 @@
+import re
+import os
+import asyncio
+import json
+from pathlib import Path
+import sys
+from typing import Any, Dict, List, Optional, Tuple
+
+import yaml
+
+from prompt_toolkit import PromptSession
+from prompt_toolkit.history import InMemoryHistory
+from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.styles import Style
+
+# 导入分析工具 (确保路径正确)
+sys.path.insert(0, str(Path(__file__).parent))
+
+from utils.nsys_to_ncu_analyzer import create_sglang_analysis_workflow
+from offline_llm_v3 import get_offline_qwen_client
+from knowledge_bases.vector_kb_manager import VectorKBManager
+
+
+class AIAgent:
+    """AI Agent Core - V3"""
+
+    def __init__(self, config: Dict):
+        self.config = config
+
+        # sglang 和模型路径
+        self.sglang_path = Path(config.get("sglang_path"))
+        self.models_path = Path(config.get("models_path"))
+        self.model_mappings = config.get("model_mappings", {})
+
+        # 输出目录
+        self.results_dir = Path(config.get("output", {}).get("results_dir", "results"))
+        self.results_dir.mkdir(exist_ok=True, parents=True)
+
+        # 本地 LLM 客户端
+        self.offline_qwen_path = Path(config.get("offline_qwen_path"))
+        self.llm_client = get_offline_qwen_client(self.offline_qwen_path)
+
+        # 分析工具配置
+        self.profiling_config = config.get("profiling_tools", {})
+        self.analysis_defaults = config.get("analysis_defaults", {})
+
+        # 分析结果缓存
+        self.last_analysis_dir: Optional[str] = None
+        self.last_analysis_dirs: List[str] = []
+        self.last_analysis_reports: List[str] = []
+        self.last_analysis_table: Optional[str] = None
+
+        # 向量知识库相关
+        kb_config = config.get("vector_store", {})
+        self.embedding_model = kb_config.get("embedding_model")
+        self.persist_directory = kb_config.get("persist_directory")
+        self.chunk_size = kb_config.get("chunk_size")
+        self.chunk_overlap = kb_config.get("chunk_overlap")
+        self.default_search_k = kb_config.get("default_search_k", 3)
+        self.similarity_threshold = kb_config.get("similarity_threshold", 0.75)
+        self.kb = VectorKBManager()
+
+        # 对话历史缓冲区
+        self.chat_history: List[Dict[str, str]] = []  # 对话历史（完整保留）
+        self.default_history_turns = 3  # 默认拉取最近对话轮数（按需拉取）
+
+        # 意图Agent映射
+        self.intent_mappings = {
+            "analysis": "用户希望**立即执行**性能分析任务（如“跑一下qwen”、“nsys/ncu分析”）。必须包含**动作意图**（运行/测试/分析等）。",
+            "rag-qa": "用户在**询问知识、数据或建议**（如“瓶颈是什么”、“推荐batch_size”、“某个Kernel的运行情况”）。无执行意图。",
+            "chat": "打招呼、感谢、闲聊以及一切无法归类的内容（如“你好”、“你是谁”）。",
+        }
+
+    def _format_history_str(
+        self, history: List[Dict[str, str]], limit: Optional[int] = -1
+    ) -> str:
+        """
+        取出并格式化历史对话。
+        Args:
+            history: 完整历史列表
+            limit: 取最近多少轮对话。1轮=用户+Agent共2条对话。
+                   -1   : (默认) 使用 self.default_history_turns
+                   None : 不限制 (取全部)
+                   int  : 指定具体轮数
+        """
+        if not history:
+            return ""
+
+        if limit == -1:
+            limit = self.default_history_turns
+
+        # 取最近 limit 轮对话
+        target_history = history[-(limit * 2) :] if limit else history
+
+        lines = []
+        for msg in target_history:
+            role = "User" if msg["role"] == "user" else "Assistant"
+            # 限制单条消息长度，防止 Prompt 过长
+            content = msg["content"].replace("\n", " ").strip()[:512]
+            lines.append(f"{role}: {content}")
+
+        return "\n".join(lines)
+
+    async def _parse_intent(self, user_query: str, intent: str = "auto") -> str:
+        """
+        意图识别函数。
+
+        Args:
+            user_query: 用户当前输入
+            history: 对话历史（用于上下文，但非必需）
+            intent: 指定意图模式。若为 "auto"，则由 LLM 判断；否则直接返回 intent。
+
+        Returns:
+            str: 意图类别，取值为 self.intent_mappings 的键之一（如 "rag-qa", "analysis", "chat"）
+        """
+        supported_intents = set(self.intent_mappings.keys())
+
+        # 如果 intent 不是 auto，直接返回
+        if intent != "auto":
+            return intent
+
+        # === LLM 自动意图识别 ===
+        # 告诉 LLM 当前可用模型有哪些
+        available_models = list(self.model_mappings.keys())
+        models_str = ", ".join([f'"{m}"' for m in available_models])
+
+        # 构建历史对话
+        history_str = self._format_history_str(self.chat_history)
+
+        # 生成意图定义描述
+        intent_definitions = "\n".join(
+            f"- **{intent}**: {desc}" for intent, desc in self.intent_mappings.items()
+        )
+
+        prompt = f"""
+            你是一个意图分类器。请仅根据用户当前输入的**语义**判断其意图类别。
+            
+            ### 意图定义（重要）
+            {intent_definitions}
+            
+            ### 输出要求（重要）
+            仅输出以下单词之一：{" | ".join(supported_intents)}，不要解释，不要标点，不要JSON。
+            
+            ### 判断原则
+            1. 优先看**当前query**，历史仅作辅助。
+            2. 若无法明确归类，请返回"chat"。
+
+            ### 当前可用模型参考（仅作背景参考，不影响分类）
+            [{models_str}]
+            
+            ### 用户当前输入（主要判断依据）
+            {user_query}
+
+            {"### 最近对话历史（可忽略的次要判断依据）\n" + history_str if history_str else "（无历史记录）"}
+        """
+
+        raw_output = self.llm_client.generate(prompt, max_tokens=32).strip()
+        raw_output = raw_output.lower().strip(" .,!?\"'")
+        if raw_output in supported_intents:
+            return raw_output
+        else:
+            # 规则兜底
+            user_query_lower = user_query.lower()
+            if any(
+                kw in user_query_lower
+                for kw in ["分析", "跑", "测", "profile", "运行", "执行", "测试"]
+            ):
+                return "analysis"
+            elif any(
+                kw in user_query_lower
+                for kw in [
+                    "什么",
+                    "多少",
+                    "是否",
+                    "为什么",
+                    "如何",
+                    "推荐",
+                    "文档",
+                    "查询",
+                    "是多少",
+                ]
+            ):
+                return "rag-qa"
+            else:
+                return "chat"
+
+    async def _parse_analysis_params(self, user_query: str) -> Dict[str, Any]:
+        """
+        从用户查询中提取模型名称和分析参数。
+        返回示例: {"model": "llama7-b", "params": {"batch_size": 1, "input_len": 128, "output_len": 1}, "analysis_type": "all"}
+
+        未识别的字段使用默认值：batch_size=1, input_len=128, output_len=1。
+        """
+
+        DEFAULT_PARAMS = {
+            "batch_size": 1,
+            "input_len": 128,
+            "output_len": 1,
+        }
+
+        available_models = list(self.model_mappings.keys())
+        models_str = ", ".join([f'"{m}"' for m in available_models])
+
+        # 构建历史对话
+        history_str = self._format_history_str(self.chat_history, limit=1)
+
+        prompt = f"""
+            你是一个专业的参数提取助手。请从用户的自然语言输入中提取执行参数。
+
+            ### 1. 提取目标
+            请提取以下三个字段，并以 JSON 格式输出（仅输出标准的 JSON 字符串，不要包含任何解释）：
+            
+            - **model**: 模型名称。必须严格匹配列表：[{models_str}]。如果找不到匹配项则留空。
+            - **params**: 包含 batch_size, input_len, output_len 的整数值。未提及的参数留空或忽略。
+            - **analysis_type**: 分析类型，取值只能是 "nsys", "ncu", "all"。判断逻辑如下：
+                1. **nsys**: 用户提到 "nsys"、"全局"、"整体"、"profile"、"timeline"。
+                2. **ncu**: 用户提到 "ncu"、"深度"、"kernel细节"、"指令级"。
+                3. **all**: 用户未指定类型，或者同时提到了以上两者，或者说 "全套"、"完整"。
+
+            ### 2. 参考示例
+            User: "跑一下qwen3-4b，batch_size设为16"
+            Output: {{"model": "qwen3-4b", "params": {{"batch_size": 16}}, "analysis_type": "all"}}
+
+            User: "帮我给llama-7b做个ncu深度分析"
+            Output: {{"model": "llama-7b", "params": {{}}, "analysis_type": "ncu"}}
+
+            User: "对qwen-7b做一下全局分析，batch_size=1，input_len=128，output_len=1"
+            Output: {{"model": "qwen", "params": {{"batch_size": 1, "input_len": 128, "output_len": 1}}, "analysis_type": "nsys"}}
+
+            ### 3. 用户输入（主要的判断依据）
+            {user_query}
+            
+            ### 4. 最近对话历史（可忽略的次要判断依据，当用户提到“之前”“上一次对话”时，你可能需要从历史对话中找参数）
+            {history_str if history_str else "（无历史记录）"}
+
+            ### 5. 你的提取结果：
+        """.strip()
+
+        def _strip_code_fence(text: str) -> str:
+            """去除代码块标记"""
+            text = text.strip()
+            # 处理开头
+            if text.startswith("```"):
+                # 找到第一行换行符
+                if "\n" in text:
+                    text = text.split("\n", 1)[1]
+                else:
+                    # 极其罕见情况：只有 ```json 没有换行
+                    text = text.lstrip("`").lstrip("json").strip()
+
+            # 处理结尾
+            if text.endswith("```"):
+                text = text[:-3]
+
+            return text.strip()
+
+        def _extract_first_json_object(text: str) -> Optional[str]:
+            """
+            从任意文本中提取第一个完整的 JSON 对象（从第一个 { 开始做括号配对）。
+            只做轻量提取：不处理字符串内花括号的复杂情形，但对 LLM 常见输出足够稳。
+            """
+            s = text
+            start = s.find("{")
+            if start < 0:
+                return None
+
+            depth = 0
+            for i in range(start, len(s)):
+                if s[i] == "{":
+                    depth += 1
+                elif s[i] == "}":
+                    depth -= 1
+                    if depth == 0:
+                        return s[start : i + 1]
+            return None
+
+        parsed_params: Dict[str, Any] = {}
+        model_name = None
+        analysis_type = "all"  # 默认值all
+
+        try:
+            raw = self.llm_client.generate(
+                prompt, max_tokens=512, mode="structured"
+            ).strip()
+            json_text = _strip_code_fence(raw)
+
+            print(json_text)
+
+            # 如果 raw 不是纯 JSON，则尝试抽取其中第一个 JSON 对象
+            if not (json_text.startswith("{") and json_text.endswith("}")):
+                extracted = _extract_first_json_object(json_text)
+                if extracted:
+                    json_text = extracted
+
+            result = json.loads(json_text)
+            model_name = result.get("model")
+            parsed_params = result.get("params", {}) or {}
+            raw_type = result.get("analysis_type")
+            if raw_type in ["nsys", "ncu", "all"]:
+                analysis_type = raw_type
+        except Exception as e:
+            print(
+                f"[_parse_analysis_params] LLM parse failed: {e}. raw={locals().get('raw', None)!r}"
+            )
+
+        # 规则兜底：尝试从 query 中提取模型名（如果 LLM 没拿到）
+        if not model_name:
+            q = user_query.lower()
+            # 最长优先，避免短名字误命中
+            for model in sorted(available_models, key=len, reverse=True):
+                if model.lower() in q:
+                    model_name = model
+                    break
+
+        # 合并参数：用解析出的值覆盖默认值（仅三项；后续可扩展为白名单）
+        final_params = DEFAULT_PARAMS.copy()
+        if isinstance(parsed_params, dict):
+            for key in ("batch_size", "input_len", "output_len"):
+                if key in parsed_params:
+                    try:
+                        final_params[key] = int(parsed_params[key])
+                    except (ValueError, TypeError):
+                        pass
+
+        return {
+            "model": model_name,
+            "params": final_params,
+            "analysis_type": analysis_type,
+        }
+
+    def _resolve_model_path(self, model_name: str) -> Optional[str]:
+        """
+        解析并返回模型路径
+        """
+
+        if not model_name:
+            return None
+        # 1. 如果 model_mappings 配置的是绝对路径，则直接返回该路径
+        if model_name in self.model_mappings:
+            mapped_path = self.model_mappings[model_name]
+            if Path(mapped_path).is_absolute():
+                return mapped_path
+            return str(self.models_path / mapped_path)
+
+        # 2. 如果 model_mappings 配置的是相对路径，则与 models_path 拼接成绝对路径，若路径存在则返回，否则返回None
+        if Path(model_name).exists():
+            return model_name
+        potential_path = self.models_path / model_name
+        if potential_path.exists():
+            return str(potential_path)
+        return None
+
+    async def _agent_analysis(self, message: str) -> str:
+        """
+        处理性能分析意图。
+        从用户消息中提取模型和参数，启动分析流程，并返回结果摘要或错误信息。
+        """
+        try:
+            # Step 1: 解析分析参数（model + kwargs）
+            parsed = await self._parse_analysis_params(message)
+            model_name = parsed.get("model")
+            params = parsed.get("params", {})
+            analysis_type = parsed.get("analysis_type", "all")
+
+            available = ", ".join(self.model_mappings.keys())
+            if not model_name:
+                return f"❌ **分析失败**: 未识别到有效的模型名称，请明确指定模型。可用模型：{available}"
+
+            if model_name not in self.model_mappings:
+                available = ", ".join(self.model_mappings.keys())
+                return (
+                    f"❌ **分析失败**: 不支持模型 '{model_name}'。可用模型：{available}"
+                )
+
+            # Step 2: 执行分析流程
+            analysis_result = await self._execute_analysis_flow(
+                model_name=model_name,
+                analysis_type=analysis_type,
+                params=params,
+            )
+
+            # Step 3: 返回结果（_execute_analysis_flow 应返回可读字符串）
+            return analysis_result
+
+        except Exception as e:
+            return f"❌ **分析执行异常**: {str(e)}"
+
+    async def _agent_rag_qa(self, message: str) -> str:
+        """
+        处理专业问答（RAG-QA）意图。
+        执行知识库检索，并基于检索结果生成严谨、有依据的回答。
+        """
+
+        # Step 1: 检索相关知识片段
+        retrieved_contexts = self.kb.search(query=message, k=self.default_search_k)
+
+        # Step 2: 构建 RAG 上下文和历史对话
+        rag_context = ""
+        if retrieved_contexts:
+            rag_snippets = [
+                f"【文档片段 {i + 1}】\n{res['content']}"
+                for i, res in enumerate(retrieved_contexts)
+            ]
+            rag_context = "\n\n".join(rag_snippets)
+
+        history_str = self._format_history_str(self.chat_history)
+
+        # Step 3: 严格约束的 RAG-QA 生成
+        prompt = f"""
+            你是一个严谨的数据分析员。你必须完全依据【参考资料】回答用户关于 GPU 性能数据的提问。
+
+            ### 参考资料
+            {rag_context if rag_context else "（警告：未检索到相关文档，可能需要告知用户资料缺失）"}
+
+            ### 用户问题
+            {message}
+            
+            ### 对话历史（可忽略的用户意图补充）
+            {history_str if history_str else "（无历史记录）"}
+
+            ### 严格约束 (Strict Rules)
+            1. **数据精确性**：如果用户询问某个 Kernel 的具体指标（如瓶颈数、带宽），**必须**在参考资料中找到**完全匹配**的 Kernel 名称后才能回答。
+            2. **拒绝猜测**：如果资料里有 "Kernel A" 和 "Kernel B"，但用户问 "Kernel C"，你必须回答："资料中未找到 Kernel C 的数据"。**严禁**把 A 的数据安在 C 上。
+            3. **原文引用**：回答时尽量使用资料中的原话或数据。
+            4. **空值处理**：如果资料为空或不相关，直接回答：“抱歉，知识库中没有相关信息。”
+
+            ### 回答：
+        """.strip()
+
+        try:
+            answer = self.llm_client.generate(prompt, max_tokens=1024).strip()
+            ref_count = len(retrieved_contexts) if retrieved_contexts else 0
+            return f"🤖 **RAG-QA**\n{answer}\n\n---\n💡 *基于 {ref_count} 条知识库片段回答*"
+        except Exception as e:
+            return f"❌ **RAG-QA生成失败**: {str(e)}"
+
+    async def _agent_chat(self, message: str) -> str:
+        """
+        闲聊模式Agent
+        """
+
+        # 构建历史对话
+        history_str = self._format_history_str(self.chat_history)
+
+        prompt = f"""
+            你是一个专业的 AI 性能分析专家。
+            不要胡编乱造技术数据，可以进行简短的日常对话。
+            
+            对话历史（可忽略的用户意图补充）
+            {history_str if history_str else "（无历史记录）"}
+            
+            用户: {message}
+            
+            你的回复:
+        """
+        raw = self.llm_client.generate(prompt, max_tokens=256).strip()
+        return f"🤖 **闲聊模式**\n{raw}"
+
+    async def process_message(self, message: str, intent: str = "auto") -> str:
+        """
+        Agentic-RAG 意图路由:
+        1. [Router] 意图识别 → 返回一个intent_mappings中的key （例如 "analysis" | "rag-qa" | "chat"）
+        2. [Branch] 根据意图进行分支处理
+        3. [History] 保存对话历史
+        """
+
+        # Step1: 意图识别（返回一个intent_mappings中的key）
+        try:
+            intent = await self._parse_intent(message, intent)
+        except Exception as e:
+            return f"❌ **意图识别失败**: {str(e)}"
+
+        response_text = ""
+
+        # Step2: 根据意图路由到对应agent
+        if intent == "analysis":
+            # === 分支 A: 性能分析 (Analysis) ===
+            print("[analysis] 识别为分析意图")
+            response_text = await self._agent_analysis(message)
+
+        elif intent == "rag-qa":
+            # === 分支 B: RAG问答 (RAG-QA) ===
+            print("[rag-qa] 识别为RAG问答意图")
+            response_text = await self._agent_rag_qa(message)
+
+        elif intent == "chat":
+            # === 分支 C: 闲聊 (Chat) ===
+            print("[chat] 识别为闲聊意图")
+            response_text = await self._agent_chat(message)
+
+        else:
+            # 理论上不会走到这里
+            response_text = "❓ 无法理解您的意图，请换种方式提问。"
+
+        # Step3: 保存对话历史，如果intent=analysis，则只返回摘要
+        self.chat_history.append({"role": "user", "content": message})
+
+        history_response = (
+            response_text if intent != "analysis" else "已完成性能分析任务。"
+        )
+        self.chat_history.append({"role": "assistant", "content": history_response})
+
+        return response_text
+
+    async def _execute_analysis_flow(
+        self, model_name: str, analysis_type: str, params: Dict
+    ) -> str:
+        model_path = self._resolve_model_path(model_name)
+        if not model_path:
+            # 明确抛出错误，让用户知道是模型配置问题
+            raise ValueError(
+                f"模型路径解析失败: '{model_name}'。\n"
+                f"请检查 config.yaml 中的 'model_mappings' 是否包含该模型，"
+                f"或者模型文件是否存在于: {self.models_path}"
+            )
+        return await self._run_analysis(
+            model_path=model_path, analysis_type=analysis_type, params=params
+        )
+
+    async def _run_analysis(
+        self, model_path: str, analysis_type: str, params: Dict
+    ) -> str:
+        """执行性能分析"""
+
+        results = []
+
+        # 参数提取
+        batch_sizes = params.get("batch_size", [1])
+        input_lens = params.get("input_len", [128])
+        output_lens = params.get("output_len", [1])
+
+        # 只分析第1组参数（避免时间过长）
+        batch_size = batch_sizes[0] if isinstance(batch_sizes, list) else batch_sizes
+        input_len = input_lens[0] if isinstance(input_lens, list) else input_lens
+        output_len = output_lens[0] if isinstance(output_lens, list) else output_lens
+
+        try:
+            # 创建分析工作流
+            analysis_workflow = create_sglang_analysis_workflow()
+            workflow_output = await asyncio.get_event_loop().run_in_executor(
+                None,
+                analysis_workflow,
+                str(model_path),
+                batch_size,
+                input_len,
+                output_len,
+            )
+
+            run_records: List[Tuple[str, Path]] = []
+
+            # 检查输出是否为列表（处理多卡或多次运行的情况）
+            if isinstance(workflow_output, list):
+                for idx, item in enumerate(workflow_output):
+                    output_path = (
+                        item.get("dir") or item.get("path")
+                        if isinstance(item, dict)
+                        else str(item)
+                    )
+                    gpu_label = (
+                        str(item.get("gpu", idx))
+                        if isinstance(item, dict)
+                        else str(idx)
+                    )
+                    if output_path:
+                        run_records.append((gpu_label, Path(output_path)))
+            elif workflow_output:
+                run_records.append(("0", Path(str(workflow_output))))
+
+            if not run_records:
+                results.append("⚠️ **分析已完成，但未找到输出目录**")
+                return "\n".join(results)
+
+            report_infos = []
+            missing_reports = []
+            for idx, (gpu_label, output_dir) in enumerate(run_records):
+                report_path = output_dir / "integrated_performance_report.md"
+                if report_path.exists():
+                    report_text = report_path.read_text(encoding="utf-8")
+                    report_infos.append(
+                        {
+                            "gpu": gpu_label,
+                            "dir": output_dir,
+                            "report": report_path,
+                            "text": report_text,
+                            "index": idx,
+                        }
+                    )
+                else:
+                    missing_reports.append(output_dir)
+
+            if not report_infos:
+                dir_lines = "\n".join(f"  • {path}" for _, path in run_records)
+                results.append(f"""
+                    ⚠️ **分析已完成，但未生成报告文件**
+
+                    📁 结果目录:
+                    {dir_lines}
+                    💡 请检查目录中的其他输出文件
+                """)
+                return "\n".join(results)
+
+            primary_info = report_infos[0]
+            self.last_analysis_dir = str(primary_info["dir"])
+            self.last_analysis_reports = [str(info["report"]) for info in report_infos]
+            summary = self._extract_report_summary(primary_info["text"])
+
+            try:
+                loop = asyncio.get_event_loop()
+                if len(report_infos) > 1:
+                    table_markdown = self._generate_multi_gpu_table(
+                        [info["text"] for info in report_infos],
+                        [info["gpu"] for info in report_infos],
+                    )
+                else:
+                    table_markdown = await loop.run_in_executor(
+                        None, self._generate_report_table, primary_info["text"]
+                    )
+            except Exception as table_exc:
+                table_markdown = f"⚠️ 表格生成失败: {table_exc}"
+
+            self.last_analysis_table = table_markdown
+
+            suggestions = self._generate_optimization_suggestions(report_infos)
+            self.last_analysis_suggestions = suggestions if suggestions else None
+
+            dir_lines = "\n".join(
+                f"  • {self._format_gpu_label(info['gpu'], info['index'])}: {info['dir']}"
+                for info in report_infos
+            )
+
+            missing_lines = ""
+            if missing_reports:
+                missing_lines = "\n".join(f"  • {path}" for path in missing_reports)
+                missing_lines = f"\n⚠️ 未找到以下目录的报告文件:\n{missing_lines}\n"
+
+            results.append(f"""
+                ✅ **分析完成!**
+
+                📁 **结果目录**:
+                {dir_lines}
+                📄 **报告文件**: {primary_info["report"]}
+                {missing_lines}
+                {summary}
+
+                📌 **热点Kernel表格预览**:
+                {table_markdown}
+
+                💡 **优化建议**:
+                {suggestions or "暂未生成优化建议"}
+
+                🔍 **详细报告**: 请查看 {primary_info["report"]}
+                📊 **可视化图表**: 请查看对应结果目录中的图片文件
+            """)
+
+        except Exception as e:
+            import traceback
+
+            error_detail = traceback.format_exc()
+            results.append(f"""
+                ❌ **分析执行失败**
+
+                错误信息: {str(e)}
+
+                详细错误:
+                ```
+                {error_detail}
+                ```
+
+                💡 **常见问题解决**:
+                1. 确保已安装 nsys 和 ncu 工具
+                2. 确保 SGlang 已正确安装
+                3. 确保模型文件路径正确
+                4. 确保有足够的 GPU 内存
+            """)
+
+        return "\n".join(results)
+
+    def _extract_report_summary(self, report_content: str) -> str:
+        """从报告中提取关键摘要信息"""
+
+        lines = report_content.split("\n")
+        summary_lines = []
+
+        # 提取关键统计信息
+        for i, line in enumerate(lines):
+            if "总kernels数量" in line or "总kernel执行时间" in line:
+                summary_lines.append(line)
+            elif "🔥 识别的热点Kernels" in line:
+                # 提取前3个热点kernel
+                summary_lines.append("\n**🔥 热点Kernels (Top 3):**")
+                for j in range(i + 1, min(i + 10, len(lines))):
+                    if lines[j].strip() and lines[j].startswith(("1.", "2.", "3.")):
+                        summary_lines.append(lines[j][:100])
+                break
+
+        return "\n".join(summary_lines) if summary_lines else ""
+
+    def _generate_multi_gpu_table(
+        self, report_texts: List[str], gpu_labels: List[str]
+    ) -> str:
+        if not report_texts:
+            return "⚠️ 未找到可用的报告内容"
+
+        entries = self._parse_kernel_entries_from_report(report_texts[0])
+        header = (
+            "| Kernel | " + " | ".join([f"{lbl} Duration" for lbl in gpu_labels]) + " |"
+        )
+        sep = "|---" * (len(gpu_labels) + 1) + "|"
+        rows = []
+        for entry in entries[:5]:  # Top 5
+            rows.append(
+                f"| {entry['name']} | {entry['duration']} |"
+                + " ... |" * (len(gpu_labels) - 1)
+            )
+        return f"{header}\n{sep}\n" + "\n".join(rows)
+
+    def _parse_kernel_entries_from_report(
+        self, report_text: str
+    ) -> List[Dict[str, str]]:
+        entries: List[Dict[str, str]] = []
+        lines = report_text.splitlines()
+        idx = 0
+        total_lines = len(lines)
+        while idx < total_lines:
+            raw_line = lines[idx]
+            if raw_line.strip().startswith("二、"):
+                break
+            match = re.match(r"^\s*\d+\.\s+(.*)$", raw_line)
+            if match:
+                name = match.group(1).strip()
+                duration = ""
+                ratio = ""
+                idx += 1
+                while idx < total_lines:
+                    line = lines[idx].strip()
+                    if line.startswith("- 执行时间"):
+                        dur_match = re.search(r"([0-9.]+)\s*ms", line)
+                        if dur_match:
+                            duration = dur_match.group(1)
+                    elif line.startswith("- 时间占比"):
+                        ratio_match = re.search(r"([0-9.]+)\s*%", line)
+                        if ratio_match:
+                            ratio = ratio_match.group(1)
+                    elif re.match(r"^\s*\d+\.", lines[idx]) or line.startswith("二、"):
+                        break
+                    idx += 1
+                entries.append({"name": name, "duration": duration, "ratio": ratio})
+            else:
+                idx += 1
+        return entries
+
+    @staticmethod
+    def _collect_ncu_csv_snippets(
+        output_dir: Path, limit: int = 1500
+    ) -> List[Tuple[str, str]]:
+        """
+        从输出目录收集 NCU 生成的 CSV 文件片段，用于辅助 LLM 分析。
+        Args:
+            output_dir: 结果目录
+            limit: 每个文件读取的字符数限制（防止 Prompt 爆炸）
+        """
+        snippets: List[Tuple[str, str]] = []
+        if not output_dir.exists():
+            return snippets
+
+        # 查找 ncu_kernel*.csv 文件
+        for csv_path in sorted(output_dir.glob("*.csv")):
+            # 简单过滤，只看可能有用的数据文件
+            if (
+                "ncu" not in csv_path.name.lower()
+                and "profile" not in csv_path.name.lower()
+            ):
+                continue
+
+            try:
+                # 只读取前 N 个字符
+                raw = csv_path.read_text(encoding="utf-8", errors="ignore")
+                snippet = raw[:limit]
+                if snippet.strip():
+                    snippets.append((csv_path.name, snippet))
+            except Exception:
+                continue
+
+        return snippets
+
+    def _generate_optimization_suggestions(
+        self, report_infos: List[Dict[str, str]]
+    ) -> str:
+        """
+        基于分析报告和原始 CSV 数据生成优化建议。
+        """
+        if not report_infos:
+            return ""
+
+        # 1. 准备上下文数据
+        context_parts = []
+
+        for info in report_infos:
+            gpu_lbl = self._format_gpu_label(info["gpu"], info["index"])
+            # 加入主报告内容
+            context_parts.append(
+                f"=== 报告 ({gpu_lbl}) ===\n{info.get('text', '')[:2000]}"
+            )  # 限制长度
+
+            # 尝试读取同目录下的 CSV 原始数据
+            output_dir = Path(info["dir"])
+            csv_data = self._collect_ncu_csv_snippets(output_dir)
+            if csv_data:
+                for name, content in csv_data:
+                    context_parts.append(
+                        f"=== 原始数据 ({gpu_lbl}/{name}) ===\n{content}\n..."
+                    )
+
+        full_context = "\n\n".join(context_parts)
+
+        # 2. 构建 Prompt
+        prompt = f"""
+        你是一位 CUDA 性能优化专家。请根据以下提供的【性能分析报告】和【原始采样数据】，给出具体的优化建议。
+
+        ### 分析数据
+        {full_context}
+
+        ### 你的任务
+        请分析上述数据，并输出一段 Markdown 格式的优化建议。
+        
+        要求：
+        1. **识别瓶颈**：指出最耗时的 Kernel 及其可能的原因（如 Memory Bound, Compute Bound, Latency Bound）。
+        2. **具体建议**：
+           - 如果是 Memory Bound，建议检查显存合并访问、Shared Memory 使用等。
+           - 如果是 Compute Bound，建议检查 Tensor Core 利用率。
+           - 如果发现大量小 Kernel，建议考虑 Kernel Fusion。
+        3. **简洁专业**：不要废话，直接列出 Top 3 建议。
+
+        ### 优化建议：
+        """.strip()
+
+        # 3. 调用 LLM
+        try:
+            # 使用 conversation 模式以获得更自然的分析语言
+            # 这里的 max_tokens 给大一点，让它充分分析
+            suggestion = self.llm_client.generate(
+                prompt, max_tokens=1024, mode="conversation"
+            )
+            return suggestion
+        except Exception as e:
+            return f"⚠️ 无法生成优化建议: {e}"
+
+    @staticmethod
+    def _generate_report_table(report_text: str) -> str:
+        """
+        [Legacy] 静态方法，供外部旧代码调用。
+        """
+        from offline_llm_v3 import get_offline_qwen_client
+
+        # 尝试从环境变量或硬编码路径获取模型
+        # 注意：这里必须与你机器上的实际路径一致，否则旧代码调用会崩
+        model_path = Path(
+            os.getenv(
+                "QWEN_LOCAL_MODEL_PATH",
+                "/workspaces/ai-agent/AI_Agent_Complete/.models/Qwen3-4B-Instruct-2507",
+            )
+        )
+
+        try:
+            client = get_offline_qwen_client(model_path)
+            return client.report_to_table(report_text)
+        except Exception as e:
+            return f"⚠️ 表格生成失败 (Legacy Mode): {e}"
+
+
+# ==================== Main CLI ====================
+if __name__ == "__main__":
+    # 1. 加载 Config
+    config_path = "config.yaml"
+    if not os.path.exists(config_path):
+        print(f"❌ 错误: 找不到 {config_path}")
+        sys.exit(1)
+
+    with open(config_path, "r", encoding="utf-8") as f:
+        config_yaml = yaml.safe_load(f)
+
+    # 2. 初始化 Agent
+    print("🔄 正在初始化 AI Agent...")
+    try:
+        agent = AIAgent(config_yaml)
+    except Exception as e:
+        print(f"❌ 初始化失败: {e}")
+        sys.exit(1)
+
+    # 3. 加载知识库
+    document_dir = Path("documents")
+    if document_dir.exists():
+        print("📚 正在加载知识库文档...")
+        count = 0
+        for file_path in document_dir.iterdir():
+            if file_path.is_file() and file_path.suffix in [".md", ".txt"]:
+                agent.kb.add_document(str(file_path))
+                count += 1
+        print(f"✅ 已加载 {count} 个文档。")
+    else:
+        print("⚠️ 文档目录不存在，跳过加载。")
+
+    # 4. 对话测试
+    async def interactive_chat_loop():
+        style = Style.from_dict({"user-prompt": "#00aa00 bold", "text": "#ffffff"})
+        session = PromptSession(history=InMemoryHistory())
+
+        print("\n" + "=" * 60)
+        print("🤖 AI 性能分析器 (V3)")
+        print("💡 支持指令: '分析 qwen' | 提问: '瓶颈是什么' | 闲聊: '你是谁'")
+        print("=" * 60 + "\n")
+
+        while True:
+            try:
+                user_input = await session.prompt_async(
+                    HTML("<user-prompt>User ></user-prompt> "), style=style
+                )
+                user_input = user_input.strip()
+                if not user_input:
+                    continue
+                if user_input.lower() in ["exit", "quit", "q"]:
+                    print("\n👋 再见！")
+                    break
+
+                print("\n⏳ Agent 正在思考...")
+                response = await agent.process_message(user_input)
+                print("-" * 20 + " Agent 回复 " + "-" * 20)
+                print(response)
+                print("-" * 52 + "\n")
+
+            except (KeyboardInterrupt, EOFError):
+                break
+            except Exception as e:
+                print(f"\n❌ 错误: {e}")
+
+    asyncio.run(interactive_chat_loop())

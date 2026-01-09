@@ -1,0 +1,737 @@
+"ID","Process ID","Process Name","Host Name","Kernel Name","Context","Stream","Block Size","Grid Size","Device","CC","Section Name","Metric Name","Metric Unit","Metric Value","Rule Name","Rule Type","Rule Description","Estimated Speedup Type","Estimated Speedup"
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Frequency","Ghz","2.62",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","SM Frequency","Ghz","1.43",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Elapsed Cycles","cycle","25,007",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Memory Throughput","%","63.33",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Throughput","%","63.33",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Duration","us","17.34",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","L1/TEX Cache Throughput","%","42.66",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","L2 Cache Throughput","%","58.31",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","SM Active Cycles","cycle","19,191.17",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Compute (SM) Throughput","%","33.22",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SpeedOfLight","","","","SOLBottleneck","OPT","Memory is more heavily utilized than Compute: Look at the Memory Workload Analysis section to identify the DRAM bottleneck. Check memory replay (coalescing) metrics to make sure you're efficiently utilizing the bytes transferred. Also consider whether it is possible to do more work per memory access (kernel fusion) or whether there are values you can (re)compute.","",""
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SpeedOfLight_RooflineChart","","","","SOLFPRoofline","INF","The ratio of peak float (fp32) to double (fp64) performance on this device is 64:1. The kernel achieved 0% of this device's fp32 peak performance and 0% of its fp64 peak performance. See the Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#roofline) for more details on roofline analysis.","",""
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Maximum Buffer Size","Mbyte","2.10",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Dropped Samples","sample","0",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Maximum Sampling Interval","us","1.50",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","# Pass Groups","","2",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Active","inst/cycle","0.65",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Elapsed","inst/cycle","0.52",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Issue Slots Busy","%","16.26",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Issued Ipc Active","inst/cycle","0.65",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","SM Busy","%","41.39",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","ComputeWorkloadAnalysis","","","","HighPipeUtilization","INF","Shared is the highest-utilized pipeline (41.4%) based on active cycles, taking into account the rates of its different instructions. It is the logical sum of several other pipelines which can't achieve full utilization on their own. It executes 64-bit floating point and tensor operations. It's dominated by its Tensor (FP) sub-pipeline. It is well-utilized, but should not be a bottleneck.","",""
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Memory Throughput","Tbyte/s","2.12",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Mem Busy","%","43.17",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Max Bandwidth","%","63.33",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L1/TEX Hit Rate","%","0",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Compression Success Rate","%","0",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Compression Ratio","","0",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Hit Rate","%","32.79",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Mem Pipes Busy","%","20.82",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","One or More Eligible","%","16.54",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Issued Warp Per Scheduler","","0.17",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","No Eligible","%","83.46",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Active Warps Per Scheduler","warp","2.32",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Eligible Warps Per Scheduler","warp","0.18",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SchedulerStats","","","","IssueSlotUtilization","OPT","Every scheduler is capable of issuing one instruction per cycle, but for this kernel each scheduler only issues an instruction every 6.0 cycles. This might leave hardware resources underutilized and may lead to less optimal performance. Out of the maximum of 16 warps per scheduler, this kernel allocates an average of 2.32 active warps per scheduler, but only an average of 0.18 warps were eligible per cycle. Eligible warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no eligible warp results in no instruction being issued and the issue slot remains unused. To increase the number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons on the Warp State Statistics and Source Counters sections.","local","36.67"
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Issued Instruction","cycle","14.04",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Executed Instruction","cycle","14.15",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Avg. Active Threads Per Warp","","32.00",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Avg. Not Predicated Off Threads Per Warp","","28.16",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WarpStateStats","","","","CPIStall","OPT","On average, each warp of this kernel spends 8.7 cycles being stalled waiting for a scoreboard dependency on a L1TEX (local, global, surface, texture) operation. Find the instruction producing the data being waited upon to identify the culprit. To reduce the number of cycles waiting on L1TEX data accesses verify the memory access patterns are optimal for the target architecture, attempt to increase cache hit rates by increasing data locality (coalescing), or by changing the cache configuration. Consider moving frequently used data to shared memory. This stall type represents about 62.2% of the total average of 14.0 cycles between issuing two instructions.","global","36.67"
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WarpStateStats","","","","CPIStall","INF","Check the Warp Stall Sampling (All Samples) table for the top stall locations in your source based on sampling data. The Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-reference) provides more details on each stall reason.","",""
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Avg. Executed Instructions Per Scheduler","inst","3,097.05",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Executed Instructions","inst","1,635,244",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Avg. Issued Instructions Per Scheduler","inst","3,121.25",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Issued Instructions","inst","1,648,019",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Block Size","","384",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Cluster Scheduling Policy","","PolicySpread",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Cluster Size","","2",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Function Cache Configuration","","CachePreferNone",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Grid Size","","128",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Registers Per Thread","register/thread","168",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Shared Memory Configuration Size","Kbyte","233.47",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Driver Shared Memory Per Block","Kbyte/block","1.02",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Dynamic Shared Memory Per Block","Kbyte/block","229.75",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Static Shared Memory Per Block","byte/block","0",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","# SMs","SM","132",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Threads","thread","49,152",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Uses Green Context","","0",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Waves Per SM","","0.97",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","LaunchStats","","","","LaunchConfiguration","OPT","The grid for this launch is configured to execute only 128 blocks, which is less than the GPU's 132 multiprocessors. This can underutilize some multiprocessors. If you do not intend to execute this kernel concurrently with other workloads, consider reducing the block size to have at least one block per multiprocessor or increase the size of the grid to fully utilize the available hardware resources. See the Hardware Model (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-hw-model) description for more details on launch configurations.","global","3.03"
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Max Active Clusters","cluster","66",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Max Cluster Size","block","16",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Overall GPU Occupancy","%","0.59",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Cluster Occupancy","%","3.12",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Barriers","block","32",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit SM","block","32",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Registers","block","1",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Shared Mem","block","1",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Warps","block","5",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Theoretical Active Warps per SM","warp","12",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Theoretical Occupancy","%","18.75",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Achieved Occupancy","%","14.22",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Achieved Active Warps Per SM","warp","9.10",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","","","","TheoreticalOccupancy","OPT","The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the number of required registers. This kernel's theoretical occupancy (18.8%) is limited by the required amount of shared memory.","global","36.67"
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average DRAM Active Cycles","cycle","28,731.40",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total DRAM Elapsed Cycles","cycle","1,814,656",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average L1 Active Cycles","cycle","19,191.17",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total L1 Elapsed Cycles","cycle","3,156,378",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average L2 Active Cycles","cycle","22,177.85",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total L2 Elapsed Cycles","cycle","2,345,040",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average SM Active Cycles","cycle","19,191.17",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total SM Elapsed Cycles","cycle","3,156,378",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average SMSP Active Cycles","cycle","18,871.74",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total SMSP Elapsed Cycles","cycle","12,625,512",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 8.76% above the average, while the minimum instance value is 100.00% below the average.","global","7.028"
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMSPs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.70% above the average, while the minimum instance value is 100.00% below the average.","global","6.077"
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more L1 Slices have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 8.76% above the average, while the minimum instance value is 100.00% below the average.","global","7.028"
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Instructions Ratio","%","0.09",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Instructions","inst","139,964",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Efficiency","%","100",
+
+"0","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Avg. Divergent Branches","","0",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Frequency","Ghz","2.62",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","SM Frequency","Ghz","1.45",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Elapsed Cycles","cycle","60,125",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Memory Throughput","%","68.75",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Throughput","%","68.75",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Duration","us","41.41",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","L1/TEX Cache Throughput","%","44.04",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","L2 Cache Throughput","%","67.77",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","SM Active Cycles","cycle","49,647.18",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Compute (SM) Throughput","%","37.41",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SpeedOfLight","","","","SOLBottleneck","OPT","Memory is more heavily utilized than Compute: Look at the Memory Workload Analysis section to identify the DRAM bottleneck. Check memory replay (coalescing) metrics to make sure you're efficiently utilizing the bytes transferred. Also consider whether it is possible to do more work per memory access (kernel fusion) or whether there are values you can (re)compute.","",""
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SpeedOfLight_RooflineChart","","","","SOLFPRoofline","INF","The ratio of peak float (fp32) to double (fp64) performance on this device is 64:1. The kernel achieved 0% of this device's fp32 peak performance and 0% of its fp64 peak performance. See the Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#roofline) for more details on roofline analysis.","",""
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Maximum Buffer Size","Mbyte","2.10",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Dropped Samples","sample","0",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Maximum Sampling Interval","us","1.50",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","# Pass Groups","","2",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Active","inst/cycle","0.60",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Elapsed","inst/cycle","0.52",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Issue Slots Busy","%","15.01",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Issued Ipc Active","inst/cycle","0.60",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","SM Busy","%","43.00",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","ComputeWorkloadAnalysis","","","","HighPipeUtilization","INF","Shared is the highest-utilized pipeline (43.0%) based on active cycles, taking into account the rates of its different instructions. It is the logical sum of several other pipelines which can't achieve full utilization on their own. It executes 64-bit floating point and tensor operations. It's dominated by its Tensor (FP) sub-pipeline. It is well-utilized, but should not be a bottleneck.","",""
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Memory Throughput","Tbyte/s","2.30",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Mem Busy","%","54.78",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Max Bandwidth","%","68.75",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L1/TEX Hit Rate","%","0",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Compression Success Rate","%","0",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Compression Ratio","","0",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Hit Rate","%","43.30",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Mem Pipes Busy","%","23.41",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","One or More Eligible","%","15.06",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Issued Warp Per Scheduler","","0.15",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","No Eligible","%","84.94",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Active Warps Per Scheduler","warp","2.31",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Eligible Warps Per Scheduler","warp","0.16",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SchedulerStats","","","","IssueSlotUtilization","OPT","Every scheduler is capable of issuing one instruction per cycle, but for this kernel each scheduler only issues an instruction every 6.6 cycles. This might leave hardware resources underutilized and may lead to less optimal performance. Out of the maximum of 16 warps per scheduler, this kernel allocates an average of 2.31 active warps per scheduler, but only an average of 0.16 warps were eligible per cycle. Eligible warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no eligible warp results in no instruction being issued and the issue slot remains unused. To increase the number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons on the Warp State Statistics and Source Counters sections.","local","31.25"
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Issued Instruction","cycle","15.33",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Executed Instruction","cycle","15.39",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Avg. Active Threads Per Warp","","32.00",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Avg. Not Predicated Off Threads Per Warp","","28.13",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WarpStateStats","","","","CPIStall","OPT","On average, each warp of this kernel spends 11.1 cycles being stalled waiting for a scoreboard dependency on a L1TEX (local, global, surface, texture) operation. Find the instruction producing the data being waited upon to identify the culprit. To reduce the number of cycles waiting on L1TEX data accesses verify the memory access patterns are optimal for the target architecture, attempt to increase cache hit rates by increasing data locality (coalescing), or by changing the cache configuration. Consider moving frequently used data to shared memory. This stall type represents about 72.1% of the total average of 15.3 cycles between issuing two instructions.","global","31.25"
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WarpStateStats","","","","CPIStall","INF","Check the Warp Stall Sampling (All Samples) table for the top stall locations in your source based on sampling data. The Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-reference) provides more details on each stall reason.","",""
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Avg. Executed Instructions Per Scheduler","inst","7,426.42",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Executed Instructions","inst","3,921,148",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Avg. Issued Instructions Per Scheduler","inst","7,453.49",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Issued Instructions","inst","3,935,441",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Block Size","","384",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Cluster Scheduling Policy","","PolicySpread",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Cluster Size","","2",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Function Cache Configuration","","CachePreferNone",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Grid Size","","128",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Registers Per Thread","register/thread","168",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Shared Memory Configuration Size","Kbyte","233.47",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Driver Shared Memory Per Block","Kbyte/block","1.02",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Dynamic Shared Memory Per Block","Kbyte/block","229.75",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Static Shared Memory Per Block","byte/block","0",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","# SMs","SM","132",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Threads","thread","49,152",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Uses Green Context","","0",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Waves Per SM","","0.97",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","LaunchStats","","","","LaunchConfiguration","OPT","The grid for this launch is configured to execute only 128 blocks, which is less than the GPU's 132 multiprocessors. This can underutilize some multiprocessors. If you do not intend to execute this kernel concurrently with other workloads, consider reducing the block size to have at least one block per multiprocessor or increase the size of the grid to fully utilize the available hardware resources. See the Hardware Model (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-hw-model) description for more details on launch configurations.","global","3.03"
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Max Active Clusters","cluster","66",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Max Cluster Size","block","16",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Overall GPU Occupancy","%","0.59",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Cluster Occupancy","%","3.12",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Barriers","block","32",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit SM","block","32",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Registers","block","1",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Shared Mem","block","1",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Warps","block","5",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Theoretical Active Warps per SM","warp","12",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Theoretical Occupancy","%","18.75",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Achieved Occupancy","%","14.13",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Achieved Active Warps Per SM","warp","9.04",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","","","","TheoreticalOccupancy","OPT","The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the number of required registers. This kernel's theoretical occupancy (18.8%) is limited by the required amount of shared memory.","global","31.25"
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average DRAM Active Cycles","cycle","74,530.20",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total DRAM Elapsed Cycles","cycle","4,336,128",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average L1 Active Cycles","cycle","49,647.18",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total L1 Elapsed Cycles","cycle","7,532,362",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average L2 Active Cycles","cycle","62,748.34",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total L2 Elapsed Cycles","cycle","5,636,960",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average SM Active Cycles","cycle","49,647.18",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total SM Elapsed Cycles","cycle","7,532,362",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average SMSP Active Cycles","cycle","49,487.14",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total SMSP Elapsed Cycles","cycle","30,129,448",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.80% above the average, while the minimum instance value is 100.00% below the average.","global","6.79"
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMSPs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 8.14% above the average, while the minimum instance value is 100.00% below the average.","global","7.062"
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more L1 Slices have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.80% above the average, while the minimum instance value is 100.00% below the average.","global","6.79"
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Instructions Ratio","%","0.09",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Instructions","inst","343,358",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Efficiency","%","100",
+
+"1","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Avg. Divergent Branches","","0",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Frequency","Ghz","2.62",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","SM Frequency","Ghz","1.43",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Elapsed Cycles","cycle","25,278",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Memory Throughput","%","62.59",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Throughput","%","62.59",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Duration","us","17.50",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","L1/TEX Cache Throughput","%","43.61",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","L2 Cache Throughput","%","57.90",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","SM Active Cycles","cycle","18,769.78",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Compute (SM) Throughput","%","32.74",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SpeedOfLight","","","","SOLBottleneck","OPT","Memory is more heavily utilized than Compute: Look at the Memory Workload Analysis section to identify the DRAM bottleneck. Check memory replay (coalescing) metrics to make sure you're efficiently utilizing the bytes transferred. Also consider whether it is possible to do more work per memory access (kernel fusion) or whether there are values you can (re)compute.","",""
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SpeedOfLight_RooflineChart","","","","SOLFPRoofline","INF","The ratio of peak float (fp32) to double (fp64) performance on this device is 64:1. The kernel achieved 0% of this device's fp32 peak performance and 0% of its fp64 peak performance. See the Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#roofline) for more details on roofline analysis.","",""
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Maximum Buffer Size","Mbyte","2.10",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Dropped Samples","sample","0",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Maximum Sampling Interval","us","1.50",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","# Pass Groups","","2",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Active","inst/cycle","0.66",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Elapsed","inst/cycle","0.51",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Issue Slots Busy","%","16.63",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Issued Ipc Active","inst/cycle","0.67",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","SM Busy","%","42.32",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","ComputeWorkloadAnalysis","","","","HighPipeUtilization","INF","Shared is the highest-utilized pipeline (42.3%) based on active cycles, taking into account the rates of its different instructions. It is the logical sum of several other pipelines which can't achieve full utilization on their own. It executes 64-bit floating point and tensor operations. It's dominated by its Tensor (FP) sub-pipeline. It is well-utilized, but should not be a bottleneck.","",""
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Memory Throughput","Tbyte/s","2.10",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Mem Busy","%","43.71",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Max Bandwidth","%","62.59",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L1/TEX Hit Rate","%","0",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Compression Success Rate","%","0",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Compression Ratio","","0",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Hit Rate","%","33.25",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Mem Pipes Busy","%","20.52",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","One or More Eligible","%","16.20",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Issued Warp Per Scheduler","","0.16",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","No Eligible","%","83.80",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Active Warps Per Scheduler","warp","2.22",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Eligible Warps Per Scheduler","warp","0.17",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SchedulerStats","","","","IssueSlotUtilization","OPT","Every scheduler is capable of issuing one instruction per cycle, but for this kernel each scheduler only issues an instruction every 6.2 cycles. This might leave hardware resources underutilized and may lead to less optimal performance. Out of the maximum of 16 warps per scheduler, this kernel allocates an average of 2.22 active warps per scheduler, but only an average of 0.17 warps were eligible per cycle. Eligible warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no eligible warp results in no instruction being issued and the issue slot remains unused. To increase the number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons on the Warp State Statistics and Source Counters sections.","local","37.41"
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Issued Instruction","cycle","13.72",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Executed Instruction","cycle","13.82",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Avg. Active Threads Per Warp","","32.00",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Avg. Not Predicated Off Threads Per Warp","","28.16",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WarpStateStats","","","","CPIStall","OPT","On average, each warp of this kernel spends 8.5 cycles being stalled waiting for a scoreboard dependency on a L1TEX (local, global, surface, texture) operation. Find the instruction producing the data being waited upon to identify the culprit. To reduce the number of cycles waiting on L1TEX data accesses verify the memory access patterns are optimal for the target architecture, attempt to increase cache hit rates by increasing data locality (coalescing), or by changing the cache configuration. Consider moving frequently used data to shared memory. This stall type represents about 61.7% of the total average of 13.7 cycles between issuing two instructions.","global","37.41"
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WarpStateStats","","","","CPIStall","INF","Check the Warp Stall Sampling (All Samples) table for the top stall locations in your source based on sampling data. The Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-reference) provides more details on each stall reason.","",""
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Avg. Executed Instructions Per Scheduler","inst","3,097.20",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Executed Instructions","inst","1,635,324",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Avg. Issued Instructions Per Scheduler","inst","3,121.26",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Issued Instructions","inst","1,648,026",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Block Size","","384",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Cluster Scheduling Policy","","PolicySpread",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Cluster Size","","2",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Function Cache Configuration","","CachePreferNone",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Grid Size","","128",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Registers Per Thread","register/thread","168",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Shared Memory Configuration Size","Kbyte","233.47",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Driver Shared Memory Per Block","Kbyte/block","1.02",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Dynamic Shared Memory Per Block","Kbyte/block","229.75",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Static Shared Memory Per Block","byte/block","0",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","# SMs","SM","132",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Threads","thread","49,152",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Uses Green Context","","0",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Waves Per SM","","0.97",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","LaunchStats","","","","LaunchConfiguration","OPT","The grid for this launch is configured to execute only 128 blocks, which is less than the GPU's 132 multiprocessors. This can underutilize some multiprocessors. If you do not intend to execute this kernel concurrently with other workloads, consider reducing the block size to have at least one block per multiprocessor or increase the size of the grid to fully utilize the available hardware resources. See the Hardware Model (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-hw-model) description for more details on launch configurations.","global","3.03"
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Max Active Clusters","cluster","66",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Max Cluster Size","block","16",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Overall GPU Occupancy","%","0.59",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Cluster Occupancy","%","3.12",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Barriers","block","32",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit SM","block","32",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Registers","block","1",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Shared Mem","block","1",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Warps","block","5",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Theoretical Active Warps per SM","warp","12",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Theoretical Occupancy","%","18.75",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Achieved Occupancy","%","14.23",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Achieved Active Warps Per SM","warp","9.11",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","","","","TheoreticalOccupancy","OPT","The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the number of required registers. This kernel's theoretical occupancy (18.8%) is limited by the required amount of shared memory.","global","37.41"
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average DRAM Active Cycles","cycle","28,667.60",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total DRAM Elapsed Cycles","cycle","1,832,192",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average L1 Active Cycles","cycle","18,769.78",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total L1 Elapsed Cycles","cycle","3,202,962",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average L2 Active Cycles","cycle","22,231.65",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total L2 Elapsed Cycles","cycle","2,370,160",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average SM Active Cycles","cycle","18,769.78",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total SM Elapsed Cycles","cycle","3,202,962",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average SMSP Active Cycles","cycle","19,271.10",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total SMSP Elapsed Cycles","cycle","12,811,848",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.46% above the average, while the minimum instance value is 100.00% below the average.","global","5.771"
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMSPs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.91% above the average, while the minimum instance value is 100.00% below the average.","global","6.281"
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more L1 Slices have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.46% above the average, while the minimum instance value is 100.00% below the average.","global","5.771"
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Instructions Ratio","%","0.09",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Instructions","inst","139,964",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Efficiency","%","100",
+
+"2","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Avg. Divergent Branches","","0",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Frequency","Ghz","2.62",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","SM Frequency","Ghz","1.45",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Elapsed Cycles","cycle","60,517",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Memory Throughput","%","68.37",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Throughput","%","68.37",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Duration","us","41.63",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","L1/TEX Cache Throughput","%","43.88",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","L2 Cache Throughput","%","67.46",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","SM Active Cycles","cycle","49,834.11",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU Speed Of Light Throughput","Compute (SM) Throughput","%","36.75",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SpeedOfLight","","","","SOLBottleneck","OPT","Memory is more heavily utilized than Compute: Look at the Memory Workload Analysis section to identify the DRAM bottleneck. Check memory replay (coalescing) metrics to make sure you're efficiently utilizing the bytes transferred. Also consider whether it is possible to do more work per memory access (kernel fusion) or whether there are values you can (re)compute.","",""
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SpeedOfLight_RooflineChart","","","","SOLFPRoofline","INF","The ratio of peak float (fp32) to double (fp64) performance on this device is 64:1. The kernel achieved 0% of this device's fp32 peak performance and 0% of its fp64 peak performance. See the Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#roofline) for more details on roofline analysis.","",""
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Maximum Buffer Size","Mbyte","33.55",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Dropped Samples","sample","0",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","Maximum Sampling Interval","us","1.50",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","PM Sampling","# Pass Groups","","2",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Active","inst/cycle","0.60",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Elapsed","inst/cycle","0.51",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Issue Slots Busy","%","14.96",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","Issued Ipc Active","inst/cycle","0.60",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Compute Workload Analysis","SM Busy","%","42.84",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","ComputeWorkloadAnalysis","","","","HighPipeUtilization","INF","Shared is the highest-utilized pipeline (42.8%) based on active cycles, taking into account the rates of its different instructions. It is the logical sum of several other pipelines which can't achieve full utilization on their own. It executes 64-bit floating point and tensor operations. It's dominated by its Tensor (FP) sub-pipeline. It is well-utilized, but should not be a bottleneck.","",""
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Memory Throughput","Tbyte/s","2.29",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Mem Busy","%","55.02",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Max Bandwidth","%","68.37",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L1/TEX Hit Rate","%","0",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Compression Success Rate","%","0",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Compression Ratio","","0",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","L2 Hit Rate","%","44.48",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Memory Workload Analysis","Mem Pipes Busy","%","22.99",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","One or More Eligible","%","14.75",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Issued Warp Per Scheduler","","0.15",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","No Eligible","%","85.25",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Active Warps Per Scheduler","warp","2.20",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Scheduler Statistics","Eligible Warps Per Scheduler","warp","0.16",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","SchedulerStats","","","","IssueSlotUtilization","OPT","Every scheduler is capable of issuing one instruction per cycle, but for this kernel each scheduler only issues an instruction every 6.8 cycles. This might leave hardware resources underutilized and may lead to less optimal performance. Out of the maximum of 16 warps per scheduler, this kernel allocates an average of 2.20 active warps per scheduler, but only an average of 0.16 warps were eligible per cycle. Eligible warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no eligible warp results in no instruction being issued and the issue slot remains unused. To increase the number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons on the Warp State Statistics and Source Counters sections.","local","31.63"
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Issued Instruction","cycle","14.91",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Executed Instruction","cycle","14.96",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Avg. Active Threads Per Warp","","32.00",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Warp State Statistics","Avg. Not Predicated Off Threads Per Warp","","28.13",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WarpStateStats","","","","CPIStall","OPT","On average, each warp of this kernel spends 10.8 cycles being stalled waiting for a scoreboard dependency on a L1TEX (local, global, surface, texture) operation. Find the instruction producing the data being waited upon to identify the culprit. To reduce the number of cycles waiting on L1TEX data accesses verify the memory access patterns are optimal for the target architecture, attempt to increase cache hit rates by increasing data locality (coalescing), or by changing the cache configuration. Consider moving frequently used data to shared memory. This stall type represents about 72.4% of the total average of 14.9 cycles between issuing two instructions.","global","31.63"
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WarpStateStats","","","","CPIStall","INF","Check the Warp Stall Sampling (All Samples) table for the top stall locations in your source based on sampling data. The Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-reference) provides more details on each stall reason.","",""
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Avg. Executed Instructions Per Scheduler","inst","7,426.43",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Executed Instructions","inst","3,921,156",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Avg. Issued Instructions Per Scheduler","inst","7,454.32",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Instruction Statistics","Issued Instructions","inst","3,935,881",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Block Size","","384",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Cluster Scheduling Policy","","PolicySpread",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Cluster Size","","2",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Function Cache Configuration","","CachePreferNone",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Grid Size","","128",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Registers Per Thread","register/thread","168",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Shared Memory Configuration Size","Kbyte","233.47",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Driver Shared Memory Per Block","Kbyte/block","1.02",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Dynamic Shared Memory Per Block","Kbyte/block","229.75",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Static Shared Memory Per Block","byte/block","0",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","# SMs","SM","132",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Threads","thread","49,152",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Uses Green Context","","0",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Launch Statistics","Waves Per SM","","0.97",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","LaunchStats","","","","LaunchConfiguration","OPT","The grid for this launch is configured to execute only 128 blocks, which is less than the GPU's 132 multiprocessors. This can underutilize some multiprocessors. If you do not intend to execute this kernel concurrently with other workloads, consider reducing the block size to have at least one block per multiprocessor or increase the size of the grid to fully utilize the available hardware resources. See the Hardware Model (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-hw-model) description for more details on launch configurations.","global","3.03"
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Max Active Clusters","cluster","66",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Max Cluster Size","block","16",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Overall GPU Occupancy","%","0.59",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Cluster Occupancy","%","3.12",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Barriers","block","32",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit SM","block","32",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Registers","block","1",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Shared Mem","block","1",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Block Limit Warps","block","5",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Theoretical Active Warps per SM","warp","12",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Theoretical Occupancy","%","18.75",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Achieved Occupancy","%","14.12",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","Achieved Active Warps Per SM","warp","9.04",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Occupancy","","","","TheoreticalOccupancy","OPT","The 3.00 theoretical warps per scheduler this kernel can issue according to its occupancy are below the hardware maximum of 16. This kernel's theoretical occupancy (18.8%) is limited by the number of required registers. This kernel's theoretical occupancy (18.8%) is limited by the required amount of shared memory.","global","31.63"
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average DRAM Active Cycles","cycle","74,527.80",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total DRAM Elapsed Cycles","cycle","4,360,192",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average L1 Active Cycles","cycle","49,834.11",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total L1 Elapsed Cycles","cycle","7,667,284",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average L2 Active Cycles","cycle","62,430.89",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total L2 Elapsed Cycles","cycle","5,665,200",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average SM Active Cycles","cycle","49,834.11",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total SM Elapsed Cycles","cycle","7,667,284",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Average SMSP Active Cycles","cycle","50,531.41",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","GPU and Memory Workload Distribution","Total SMSP Elapsed Cycles","cycle","30,669,136",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.70% above the average, while the minimum instance value is 100.00% below the average.","global","6.607"
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMSPs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.14% above the average, while the minimum instance value is 100.00% below the average.","global","6.213"
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more L1 Slices have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 7.70% above the average, while the minimum instance value is 100.00% below the average.","global","6.607"
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Instructions Ratio","%","0.09",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Instructions","inst","343,092",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Branch Efficiency","%","100",
+
+"3","926005","python3.12","127.0.0.1","nvjet_hsh_64x64_64x13_1x2_h_bz_TNT","1","7","(384, 1, 1)","(2, 64, 1)","0","9.0","Source Counters","Avg. Divergent Branches","","0",

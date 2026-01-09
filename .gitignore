@@ -1,0 +1,106 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Analysis outputs
+*.nsys-rep
+*.ncu-rep
+*.sqlite
+*.json.gz
+*.tar.gz
+
+# Model files (optional - uncomment if you don't want to track large model files)
+# *.bin
+# *.safetensors
+# *.ckpt
+# *.pth
+
+# Docker
+.dockerignore
+
+# Node modules (if any)
+node_modules/
+
+# Embedded git repositories
+tools_and_examples/TOOLS/LLM-Viewer/
+
+# 下载的模型
+models
+
+# 一些分析结果
+wenying/analysis_results
+wenying/analysis_results/**/*.json
+wenying/**/sglang_overview.json

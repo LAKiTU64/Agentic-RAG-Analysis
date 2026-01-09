@@ -1,0 +1,377 @@
+"ID","Process ID","Process Name","Host Name","Kernel Name","Context","Stream","Block Size","Grid Size","Device","CC","Section Name","Metric Name","Metric Unit","Metric Value","Rule Name","Rule Type","Rule Description","Estimated Speedup Type","Estimated Speedup"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Frequency","Ghz","2.61",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","SM Frequency","Ghz","1.58",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","Elapsed Cycles","cycle","8,045",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","Memory Throughput","%","10.44",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Throughput","%","6.29",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","Duration","us","5.09",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","L1/TEX Cache Throughput","%","11.97",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","L2 Cache Throughput","%","18.62",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","SM Active Cycles","cycle","3,527.67",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","Compute (SM) Throughput","%","11.29",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","SpeedOfLight","","","","SOLBottleneck","OPT","This kernel grid is too small to fill the available resources on this device, resulting in only 0.2 full waves across all SMs. Look at Launch Statistics for more details.","",""
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","SpeedOfLight_RooflineChart","","","","SOLFPRoofline","INF","The ratio of peak float (fp32) to double (fp64) performance on this device is 64:1. The kernel achieved 1% of this device's fp32 peak performance and 0% of its fp64 peak performance. See the Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#roofline) for more details on roofline analysis.","",""
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PM Sampling","Maximum Buffer Size","Mbyte","16.78",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PM Sampling","Dropped Samples","sample","0",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PM Sampling","Maximum Sampling Interval","us","1.50",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PM Sampling","# Pass Groups","","2",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PmSampling","","","","PMSamplingData","WRN","Sampling interval is larger than 10% of the workload duration, which likely results in very few collected samples. For better results, use the --pm-sampling-interval option to reduce the sampling interval. Use --pm-sampling-buffer-size to increase the sampling buffer size for the smaller interval, or don't set a fixed buffer size and let the tool adjust it automatically.","",""
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Active","inst/cycle","0.91",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Elapsed","inst/cycle","0.44",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","Issue Slots Busy","%","23.21",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","Issued Ipc Active","inst/cycle","0.93",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","SM Busy","%","23.21",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","ComputeWorkloadAnalysis","","","","HighPipeUtilization","OPT","All compute pipelines are under-utilized. Either this kernel is very small or it doesn't issue enough warps per scheduler. Check the Launch Statistics and Scheduler Statistics sections for further details.","local","82.82"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","Memory Throughput","Gbyte/s","210.01",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","Mem Busy","%","10.44",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","Max Bandwidth","%","9.35",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","L1/TEX Hit Rate","%","25",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","L2 Compression Success Rate","%","569.75",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","L2 Compression Ratio","","5.64",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","L2 Hit Rate","%","69.46",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","Mem Pipes Busy","%","6.68",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","One or More Eligible","%","23.87",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","Issued Warp Per Scheduler","","0.24",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","No Eligible","%","76.13",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","Active Warps Per Scheduler","warp","3.87",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","Eligible Warps Per Scheduler","warp","0.44",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","SchedulerStats","","","","IssueSlotUtilization","OPT","Every scheduler is capable of issuing one instruction per cycle, but for this kernel each scheduler only issues an instruction every 4.2 cycles. This might leave hardware resources underutilized and may lead to less optimal performance. Out of the maximum of 16 warps per scheduler, this kernel allocates an average of 3.87 active warps per scheduler, but only an average of 0.44 warps were eligible per cycle. Eligible warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no eligible warp results in no instruction being issued and the issue slot remains unused. To increase the number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons on the Warp State Statistics and Source Counters sections.","local","76.13"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Issued Instruction","cycle","16.22",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Executed Instruction","cycle","16.61",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Warp State Statistics","Avg. Active Threads Per Warp","","32",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Warp State Statistics","Avg. Not Predicated Off Threads Per Warp","","30.27",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WarpStateStats","","","","CPIStall","OPT","On average, each warp of this kernel spends 5.3 cycles being stalled waiting for a scoreboard dependency on a L1TEX (local, global, surface, texture) operation. Find the instruction producing the data being waited upon to identify the culprit. To reduce the number of cycles waiting on L1TEX data accesses verify the memory access patterns are optimal for the target architecture, attempt to increase cache hit rates by increasing data locality (coalescing), or by changing the cache configuration. Consider moving frequently used data to shared memory. This stall type represents about 32.6% of the total average of 16.2 cycles between issuing two instructions.","global","32.64"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WarpStateStats","","","","CPIStall","INF","Check the Warp Stall Sampling (All Samples) table for the top stall locations in your source based on sampling data. The Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-reference) provides more details on each stall reason.","",""
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Instruction Statistics","Avg. Executed Instructions Per Scheduler","inst","799.27",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Instruction Statistics","Executed Instructions","inst","422,016",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Instruction Statistics","Avg. Issued Instructions Per Scheduler","inst","818.64",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Instruction Statistics","Issued Instructions","inst","432,244",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","InstructionStats","","","","FPInstructions","OPT","This kernel executes 18432 fused and 60032 non-fused FP32 instructions. By converting pairs of non-fused instructions to their fused (https://docs.nvidia.com/cuda/floating-point/#cuda-and-floating-point), higher-throughput equivalent, the achieved FP32 performance could be increased by up to 38% (relative to its current performance). Check the Source page to identify where this kernel executes FP32 instructions.","global","3.077"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Block Size","","512",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Cluster Scheduling Policy","","PolicySpread",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Cluster Size","","0",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Function Cache Configuration","","CachePreferNone",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Grid Size","","128",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Registers Per Thread","register/thread","32",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Shared Memory Configuration Size","Kbyte","16.38",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Driver Shared Memory Per Block","Kbyte/block","1.02",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Dynamic Shared Memory Per Block","byte/block","64",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Static Shared Memory Per Block","byte/block","0",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","# SMs","SM","132",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Threads","thread","65,536",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Uses Green Context","","0",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Waves Per SM","","0.24",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","LaunchStats","","","","LaunchConfiguration","OPT","The grid for this launch is configured to execute only 128 blocks, which is less than the GPU's 132 multiprocessors. This can underutilize some multiprocessors. If you do not intend to execute this kernel concurrently with other workloads, consider reducing the block size to have at least one block per multiprocessor or increase the size of the grid to fully utilize the available hardware resources. See the Hardware Model (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-hw-model) description for more details on launch configurations.","global","3.03"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Max Active Clusters","cluster","0",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Max Cluster Size","block","8",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Overall GPU Occupancy","%","0",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Cluster Occupancy","%","0",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit Barriers","block","32",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit SM","block","32",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit Registers","block","4",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit Shared Mem","block","14",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit Warps","block","4",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Theoretical Active Warps per SM","warp","64",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Theoretical Occupancy","%","100",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Achieved Occupancy","%","24.41",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Achieved Active Warps Per SM","warp","15.62",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","","","","AchievedOccupancy","OPT","The difference between calculated theoretical (100.0%) and measured achieved occupancy (24.4%) can be the result of warp scheduling overheads or workload imbalances during the kernel execution. Load imbalances can occur between warps within a block as well as across blocks of the same kernel. See the CUDA Best Practices Guide (https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#occupancy) for more details on optimizing occupancy.","global","75.59"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average DRAM Active Cycles","cycle","834.80",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total DRAM Elapsed Cycles","cycle","530,688",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average L1 Active Cycles","cycle","3,527.67",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total L1 Elapsed Cycles","cycle","957,224",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average L2 Active Cycles","cycle","3,309.41",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total L2 Elapsed Cycles","cycle","692,560",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average SM Active Cycles","cycle","3,527.67",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total SM Elapsed Cycles","cycle","957,224",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average SMSP Active Cycles","cycle","3,429.62",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total SMSP Elapsed Cycles","cycle","3,828,896",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMSPs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 11.45% above the average, while the minimum instance value is 100.00% below the average.","global","5.414"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more L2 Slices have a much higher number of active cycles than the average number of active cycles. Maximum instance value is 31.83% above the average, while the minimum instance value is 21.19% below the average.","global","12.17"
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Source Counters","Branch Instructions Ratio","%","0.06",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Source Counters","Branch Instructions","inst","24,704",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Source Counters","Branch Efficiency","%","100",
+
+"0","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Source Counters","Avg. Divergent Branches","","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Frequency","Ghz","2.60",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","SM Frequency","Ghz","1.58",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","Elapsed Cycles","cycle","8,701",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","Memory Throughput","%","9.79",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","DRAM Throughput","%","5.82",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","Duration","us","5.50",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","L1/TEX Cache Throughput","%","12.13",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","L2 Cache Throughput","%","17.44",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","SM Active Cycles","cycle","3,469.70",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU Speed Of Light Throughput","Compute (SM) Throughput","%","11.23",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","SpeedOfLight","","","","SOLBottleneck","OPT","This kernel grid is too small to fill the available resources on this device, resulting in only 0.2 full waves across all SMs. Look at Launch Statistics for more details.","",""
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","SpeedOfLight_RooflineChart","","","","SOLFPRoofline","INF","The ratio of peak float (fp32) to double (fp64) performance on this device is 64:1. The kernel achieved 1% of this device's fp32 peak performance and 0% of its fp64 peak performance. See the Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#roofline) for more details on roofline analysis.","",""
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PM Sampling","Maximum Buffer Size","Mbyte","16.78",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PM Sampling","Dropped Samples","sample","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PM Sampling","Maximum Sampling Interval","us","1.50",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PM Sampling","# Pass Groups","","2",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","PmSampling","","","","PMSamplingData","WRN","Sampling interval is larger than 10% of the workload duration, which likely results in very few collected samples. For better results, use the --pm-sampling-interval option to reduce the sampling interval. Use --pm-sampling-buffer-size to increase the sampling buffer size for the smaller interval, or don't set a fixed buffer size and let the tool adjust it automatically.","",""
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Active","inst/cycle","0.92",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","Executed Ipc Elapsed","inst/cycle","0.44",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","Issue Slots Busy","%","23.59",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","Issued Ipc Active","inst/cycle","0.94",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Compute Workload Analysis","SM Busy","%","23.59",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","ComputeWorkloadAnalysis","","","","HighPipeUtilization","OPT","All compute pipelines are under-utilized. Either this kernel is very small or it doesn't issue enough warps per scheduler. Check the Launch Statistics and Scheduler Statistics sections for further details.","local","82.53"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","Memory Throughput","Gbyte/s","194.14",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","Mem Busy","%","9.79",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","Max Bandwidth","%","8.75",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","L1/TEX Hit Rate","%","25",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","L2 Compression Success Rate","%","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","L2 Compression Ratio","","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","L2 Hit Rate","%","66.82",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Memory Workload Analysis","Mem Pipes Busy","%","6.64",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","One or More Eligible","%","24.65",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","Issued Warp Per Scheduler","","0.25",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","No Eligible","%","75.35",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","Active Warps Per Scheduler","warp","4.06",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Scheduler Statistics","Eligible Warps Per Scheduler","warp","0.45",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","SchedulerStats","","","","IssueSlotUtilization","OPT","Every scheduler is capable of issuing one instruction per cycle, but for this kernel each scheduler only issues an instruction every 4.1 cycles. This might leave hardware resources underutilized and may lead to less optimal performance. Out of the maximum of 16 warps per scheduler, this kernel allocates an average of 4.06 active warps per scheduler, but only an average of 0.45 warps were eligible per cycle. Eligible warps are the subset of active warps that are ready to issue their next instruction. Every cycle with no eligible warp results in no instruction being issued and the issue slot remains unused. To increase the number of eligible warps, reduce the time the active warps are stalled by inspecting the top stall reasons on the Warp State Statistics and Source Counters sections.","local","75.35"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Issued Instruction","cycle","16.48",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Warp State Statistics","Warp Cycles Per Executed Instruction","cycle","16.88",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Warp State Statistics","Avg. Active Threads Per Warp","","32",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Warp State Statistics","Avg. Not Predicated Off Threads Per Warp","","30.27",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WarpStateStats","","","","CPIStall","OPT","On average, each warp of this kernel spends 5.2 cycles being stalled waiting for a scoreboard dependency on a L1TEX (local, global, surface, texture) operation. Find the instruction producing the data being waited upon to identify the culprit. To reduce the number of cycles waiting on L1TEX data accesses verify the memory access patterns are optimal for the target architecture, attempt to increase cache hit rates by increasing data locality (coalescing), or by changing the cache configuration. Consider moving frequently used data to shared memory. This stall type represents about 31.4% of the total average of 16.5 cycles between issuing two instructions.","global","31.37"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WarpStateStats","","","","CPIStall","INF","Check the Warp Stall Sampling (All Samples) table for the top stall locations in your source based on sampling data. The Kernel Profiling Guide (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-reference) provides more details on each stall reason.","",""
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Instruction Statistics","Avg. Executed Instructions Per Scheduler","inst","799.27",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Instruction Statistics","Executed Instructions","inst","422,016",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Instruction Statistics","Avg. Issued Instructions Per Scheduler","inst","818.61",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Instruction Statistics","Issued Instructions","inst","432,228",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","InstructionStats","","","","FPInstructions","OPT","This kernel executes 18432 fused and 60032 non-fused FP32 instructions. By converting pairs of non-fused instructions to their fused (https://docs.nvidia.com/cuda/floating-point/#cuda-and-floating-point), higher-throughput equivalent, the achieved FP32 performance could be increased by up to 38% (relative to its current performance). Check the Source page to identify where this kernel executes FP32 instructions.","global","3.135"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Block Size","","512",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Cluster Scheduling Policy","","PolicySpread",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Cluster Size","","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Function Cache Configuration","","CachePreferNone",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Grid Size","","128",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Registers Per Thread","register/thread","32",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Shared Memory Configuration Size","Kbyte","16.38",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Driver Shared Memory Per Block","Kbyte/block","1.02",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Dynamic Shared Memory Per Block","byte/block","64",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Static Shared Memory Per Block","byte/block","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","# SMs","SM","132",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Threads","thread","65,536",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Uses Green Context","","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Launch Statistics","Waves Per SM","","0.24",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","LaunchStats","","","","LaunchConfiguration","OPT","The grid for this launch is configured to execute only 128 blocks, which is less than the GPU's 132 multiprocessors. This can underutilize some multiprocessors. If you do not intend to execute this kernel concurrently with other workloads, consider reducing the block size to have at least one block per multiprocessor or increase the size of the grid to fully utilize the available hardware resources. See the Hardware Model (https://docs.nvidia.com/nsight-compute/ProfilingGuide/index.html#metrics-hw-model) description for more details on launch configurations.","global","3.03"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Max Active Clusters","cluster","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Max Cluster Size","block","8",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Overall GPU Occupancy","%","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Cluster Occupancy","%","0",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit Barriers","block","32",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit SM","block","32",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit Registers","block","4",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit Shared Mem","block","14",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Block Limit Warps","block","4",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Theoretical Active Warps per SM","warp","64",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Theoretical Occupancy","%","100",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Achieved Occupancy","%","24.42",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","Achieved Active Warps Per SM","warp","15.63",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Occupancy","","","","AchievedOccupancy","OPT","The difference between calculated theoretical (100.0%) and measured achieved occupancy (24.4%) can be the result of warp scheduling overheads or workload imbalances during the kernel execution. Load imbalances can occur between warps within a block as well as across blocks of the same kernel. See the CUDA Best Practices Guide (https://docs.nvidia.com/cuda/cuda-c-best-practices-guide/index.html#occupancy) for more details on optimizing occupancy.","global","75.35"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average DRAM Active Cycles","cycle","834.80",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total DRAM Elapsed Cycles","cycle","573,440",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average L1 Active Cycles","cycle","3,469.70",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total L1 Elapsed Cycles","cycle","962,510",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average L2 Active Cycles","cycle","3,453.25",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total L2 Elapsed Cycles","cycle","748,160",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average SM Active Cycles","cycle","3,469.70",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total SM Elapsed Cycles","cycle","962,510",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Average SMSP Active Cycles","cycle","3,320.74",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","GPU and Memory Workload Distribution","Total SMSP Elapsed Cycles","cycle","3,850,040",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 10.94% above the average, while the minimum instance value is 100.00% below the average.","global","5.207"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more SMSPs have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 12.64% above the average, while the minimum instance value is 100.00% below the average.","global","5.754"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more L1 Slices have a much lower number of active cycles than the average number of active cycles. Maximum instance value is 10.94% above the average, while the minimum instance value is 100.00% below the average.","global","5.207"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","WorkloadDistribution","","","","WorkloadImbalance","OPT","One or more L2 Slices have a much higher number of active cycles than the average number of active cycles. Maximum instance value is 23.02% above the average, while the minimum instance value is 20.22% below the average.","global","8.501"
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Source Counters","Branch Instructions Ratio","%","0.06",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Source Counters","Branch Instructions","inst","24,704",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Source Counters","Branch Efficiency","%","100",
+
+"1","937381","python3.12","127.0.0.1","void RMSNormKernel<8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)","1","7","(32, 16, 1)","(128, 1, 1)","0","9.0","Source Counters","Avg. Divergent Branches","","0",
