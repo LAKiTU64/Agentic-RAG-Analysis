@@ -100,7 +100,7 @@ class VectorKBManager:
             embedding_function=self.embeddings,
             collection_name="rag_collection",
             collection_metadata={"hnsw:space": "cosine"},
-            client_settings=Settings(anonymized_telemetry=False), # 禁用遥测
+            client_settings=Settings(anonymized_telemetry=False),  # 禁用遥测
         )
 
     def _get_loader(self, file_path: str) -> TextLoader:
@@ -251,40 +251,33 @@ class VectorKBManager:
         k: int = DEFAULT_SEARCH_K,
         max_distance: float = MAX_DISTANCE_THRESHOLD,
         *,
-        document_id: Optional[str] = None,
+        where_filter: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
         """
-        相似度检索（基于向量距离）。
+        相似度检索
 
-        参数：
-        - max_distance: 最大允许的距离阈值。Chroma 使用余弦距离（归一化后通常在 [0, ～1.5]），
-                        **值越小，表示要求越相似（过滤越严格）**。
-        - document_id: 可选，仅返回该文档的 chunks。
+        params:
+        - where_filter: 符合 Chroma 语法的过滤字典。
+        例如: {"$and": [{"batch_size": {"$gt": 32}}, {"gpu": "H800"}]}
         """
         assert self.vectorstore is not None
 
-        docs_and_scores = self.vectorstore.similarity_search_with_score(query, k=k)
+        # 执行检索
+        docs_and_scores = self.vectorstore.similarity_search_with_score(
+            query, k=k, filter=where_filter
+        )
 
         results: List[Dict[str, Any]] = []
         for doc, score in docs_and_scores:
-            if score <= max_distance:  # 距离 <= 阈值 → 保留
+            if score <= max_distance:
                 meta = doc.metadata or {}
-                if document_id and meta.get("document_id") != document_id:
-                    continue
+                res_item = {
+                    "content": doc.page_content,
+                    "score": round(float(score), 4),
+                    **meta,  # 展开所有元数据
+                }
+                results.append(res_item)
 
-                results.append(
-                    {
-                        "content": doc.page_content,
-                        "document_id": meta.get("document_id"),
-                        "doc_hash": meta.get("doc_hash"),  # 新增
-                        "filename": meta.get("filename"),
-                        "add_time": meta.get("add_time"),
-                        "score": round(float(score), 4),
-                        "start_index": meta.get("start_index"),
-                        "source": meta.get("source"),
-                        # 注意：'page' 已被彻底移除
-                    }
-                )
         return results
 
     def get_overview(self) -> Dict[str, Any]:
@@ -420,5 +413,5 @@ if __name__ == "__main__":
             f"doc_hash={res.get('doc_hash')} | "
             f"filename={res.get('filename')} | "
             f"score={res.get('score')} | "
-            f"content={res.get('content')}..."
+            f"content=\n{res.get('content')}..."
         )
