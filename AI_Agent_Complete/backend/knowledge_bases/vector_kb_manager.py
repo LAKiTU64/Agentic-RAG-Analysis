@@ -1,4 +1,5 @@
 import os
+
 import shutil
 import uuid
 import hashlib
@@ -6,9 +7,11 @@ from datetime import datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional, Tuple
 
 from langchain_chroma import Chroma
+from chromadb.config import Settings
 from langchain_community.document_loaders import TextLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+import torch
 
 
 # --- Config ---
@@ -16,8 +19,6 @@ EMBEDDING_MODEL = "/workspaces/models/bge-small-zh-v1.5"
 CHROMA_PATH = "/workspaces/ai-agent/AI_Agent_Complete/.chroma_db"
 DOCS_DIR = "/workspaces/ai-agent/AI_Agent_Complete/documents"
 
-CHUNK_SIZE = 300
-CHUNK_OVERLAP = 100
 DEFAULT_SEARCH_K = 3
 
 # ⚠️ Chroma 返回的是向量距离（cosine distance），范围通常为 [0, ～1.5]
@@ -78,7 +79,7 @@ class VectorKBManager:
         self.embeddings = HuggingFaceEmbeddings(
             model_name=embedding_model_path,
             model_kwargs={
-                "device": "cuda",  # 确保有CUDA环境
+                "device": "cuda" if torch.cuda.is_available() else "cpu",
                 "local_files_only": True,
             },
             encode_kwargs={"normalize_embeddings": True},
@@ -99,6 +100,7 @@ class VectorKBManager:
             embedding_function=self.embeddings,
             collection_name="rag_collection",
             collection_metadata={"hnsw:space": "cosine"},
+            client_settings=Settings(anonymized_telemetry=False), # 禁用遥测
         )
 
     def _get_loader(self, file_path: str) -> TextLoader:
