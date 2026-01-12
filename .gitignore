@@ -104,3 +104,6 @@ models
 wenying/analysis_results
 wenying/analysis_results/**/*.json
 wenying/**/sglang_overview.json
+
+# 向量库位置
+AI_Agent_Complete/.chroma_db
