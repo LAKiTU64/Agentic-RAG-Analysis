@@ -11,10 +11,24 @@ sglang_path: "/sgl-workspace/sglang/python/sglang"
 # - Linux: "/home/user/sglang"
 
 # 模型文件路径（必须配置）
-models_path: "/workspace/"
+models_path: "/workspaces/"
 # 示例：
 # - Windows: "D:/Models" 或 "C:/Users/xxx/models"
 # - Linux: "/data/models"
+
+# 本地LLM路径（必须配置）
+offline_qwen_path: "/workspaces/models/Qwen3-30B-A3B-Instruct-2507"
+
+# ============================================================
+# 向量库配置
+# ============================================================
+vector_store:
+  persist_directory: ".chroma_db"
+  embedding_model: "bge-small-zh-v1.5"
+  chunk_size: 300
+  chunk_overlap: 100
+  default_search_k: 5
+  similarity_threshold: 0.5
 
 # ============================================================
 # 服务器配置
