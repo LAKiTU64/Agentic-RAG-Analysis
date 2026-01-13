@@ -107,7 +107,8 @@ class VectorKBManager:
         ext = file_path.split(".")[-1].lower()
         if ext in ("txt", "md"):
             return TextLoader(file_path, encoding="utf-8")
-        raise ValueError(f"❌ 不支持的文件格式: {ext}")
+        else:
+            raise ValueError(f"不支持该文件类型：.{ext}")
 
     def _compute_file_hash(self, file_path: str) -> str:
         """计算文件的 SHA256 哈希（基于原始字节），用于内容指纹"""
