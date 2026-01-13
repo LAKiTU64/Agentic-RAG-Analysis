@@ -15,14 +15,8 @@ import torch
 
 
 # --- Config ---
-EMBEDDING_MODEL = "/workspaces/models/bge-small-zh-v1.5"
-CHROMA_PATH = "/workspaces/ai-agent/AI_Agent_Complete/.chroma_db"
-DOCS_DIR = "/workspaces/ai-agent/AI_Agent_Complete/documents"
-
 DEFAULT_SEARCH_K = 3
-
-# MAX_DISTANCE_THRESHOLD 越小，检索条件越严格
-MAX_DISTANCE_THRESHOLD = 0.5
+MAX_DISTANCE_THRESHOLD = 0.5  # MAX_DISTANCE_THRESHOLD 越小，检索条件越严格
 
 # 北京时间
 BEIJING_TZ = timezone(timedelta(hours=8))
@@ -62,8 +56,8 @@ class VectorKBManager:
 
     def __init__(
         self,
-        persist_directory: str = CHROMA_PATH,
-        embedding_model_path: str = EMBEDDING_MODEL,
+        persist_directory: str = "/workspaces/ai-agent/AI_Agent_Complete/.chroma_db",
+        embedding_model_path: str = "/workspaces/models/bge-small-zh-v1.5",
     ) -> None:
         self.persist_directory = persist_directory
         self.embedding_model_path = embedding_model_path
@@ -406,7 +400,13 @@ class VectorKBManager:
 if __name__ == "__main__":
     # 1. 初始化（确保模型路径正确）
     print("\nStep 1: 初始化向量库\n")
-    kb = VectorKBManager()
+    chroma_path = "workspaces/ai-agent/AI_Agent_Complete/.chroma_db"
+    embedding_model_path = "/workspaces/models/bge-small-zh-v1.5"
+    docs_dir = "workspaces/ai-agent/AI_Agent_Complete/documents"  # 测试文档目录
+
+    kb = VectorKBManager(
+        persist_directory=chroma_path, embedding_model_path=embedding_model_path
+    )
 
     # 2. 批量导入
     print("\nStep 2: 批量导入\n")
@@ -419,8 +419,8 @@ if __name__ == "__main__":
         "input_len": 512,
     }
 
-    for filename in os.listdir(DOCS_DIR):
-        full_path = os.path.join(DOCS_DIR, filename)
+    for filename in os.listdir(docs_dir):
+        full_path = os.path.join(docs_dir, filename)
         if os.path.isfile(full_path):
             result = kb.add_document(full_path, runtime_info=mock_runtime_info)
             print(result)
