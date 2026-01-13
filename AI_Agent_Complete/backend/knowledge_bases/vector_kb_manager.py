@@ -21,8 +21,7 @@ DOCS_DIR = "/workspaces/ai-agent/AI_Agent_Complete/documents"
 
 DEFAULT_SEARCH_K = 3
 
-# ⚠️ Chroma 返回的是向量距离（cosine distance），范围通常为 [0, ～1.5]
-# **值越小表示越相似**，因此 MAX_DISTANCE_THRESHOLD 越小，检索条件越严格
+# MAX_DISTANCE_THRESHOLD 越小，检索条件越严格
 MAX_DISTANCE_THRESHOLD = 0.5
 
 # 北京时间
@@ -75,14 +74,14 @@ class VectorKBManager:
                 f"❌ 找不到本地模型目录: {embedding_model_path}。请确保模型已下载到该位置。"
             )
 
-        # 初始化 Embedding：强制开启 local_files_only，禁止联网下载
+        # 初始化 Embedding：强制开启 local_files_only，禁止联网下载 embedding 模型；增加 CUDA 环境的支持
         self.embeddings = HuggingFaceEmbeddings(
             model_name=embedding_model_path,
             model_kwargs={
                 "device": "cuda" if torch.cuda.is_available() else "cpu",
                 "local_files_only": True,
             },
-            encode_kwargs={"normalize_embeddings": True},
+            encode_kwargs={"normalize_embeddings": True},  # 开启向量归一化
         )
 
         self.vectorstore: Optional[Chroma] = None
@@ -258,7 +257,19 @@ class VectorKBManager:
 
         params:
         - where_filter: 符合 Chroma 语法的过滤字典。
-        例如: {"$and": [{"batch_size": {"$gt": 32}}, {"gpu": "H800"}]}
+        例如: 找出使用 A100 或 H800 GPU、batch_size 大于 8、且 accuracy 小于等于 0.85 的文档
+        where_filter = {
+            "$and": [
+                {
+                    "$or": [
+                        {"gpu": "A100"},
+                        {"gpu": "H800"}
+                    ]
+                },
+                {"batch_size": {"$gt": 8}},
+                {"accuracy": {"$lte": 0.85}}
+            ]
+        }
         """
         assert self.vectorstore is not None
 
@@ -337,10 +348,11 @@ class VectorKBManager:
             shutil.rmtree(self.persist_directory)
         self._load_or_create(is_reset=False)
 
-    def as_retriever(self, **kwargs):
+    def as_retrieriter(self, **kwargs):
         from langchain_core.documents import Document
         from langchain_core.retrievers import BaseRetriever
         from pydantic import PrivateAttr
+        from typing import Optional, Dict, Any
 
         class KBRetriever(BaseRetriever):
             _kb_manager: "VectorKBManager" = PrivateAttr()
@@ -353,9 +365,21 @@ class VectorKBManager:
                 self.k = k
                 self.max_distance = max_distance
 
-            def _get_relevant_documents(self, query: str) -> List[Document]:
+            def _get_relevant_documents(
+                self,
+                query: str,
+                *,
+                run_manager=None,  # LangChain 内部参数，可忽略
+                **kwargs,
+            ) -> List[Document]:
+                # 从 kwargs 中提取 filter（符合 LangChain 规范）
+                where_filter: Optional[Dict[str, Any]] = kwargs.get("filter")
+
                 search_results = self._kb_manager.search(
-                    query, k=self.k, max_distance=self.max_distance
+                    query,
+                    k=self.k,
+                    max_distance=self.max_distance,
+                    where_filter=where_filter,  # 👈 透传！
                 )
                 return [
                     Document(
@@ -388,8 +412,9 @@ if __name__ == "__main__":
     # 模拟一个统一的 runtime_info（所有文档共享）
     mock_runtime_info = {
         "model_name": "qwen2-7b",
-        "batch_size": 1,
+        "batch_size": 16,  # 改为 >8，方便后续过滤
         "gpu": "H800",
+        "accuracy": 0.91,  # 新增字段，用于 filter 测试
         "input_len": 512,
     }
 
@@ -404,8 +429,8 @@ if __name__ == "__main__":
     overview = kb.get_overview()
     print("overview:", overview)
 
-    # 4. 检索测试
-    print("\nStep 4: 检索测试\n")
+    # 4. 基础检索测试
+    print("\nStep 4: 基础检索测试\n")
     test_query = "L2缓存命中率低"
     results = kb.search(test_query)
     for res in results:
@@ -413,5 +438,35 @@ if __name__ == "__main__":
             f"doc_hash={res.get('doc_hash')} | "
             f"filename={res.get('filename')} | "
             f"score={res.get('score')} | "
-            f"content=\n{res.get('content')}..."
+            f"content=\n{res.get('content')[:100]}..."
+        )
+
+    # 5. 带元数据过滤的检索测试
+    print("\nStep 5: 元数据过滤检索测试 (filter: gpu=H800 且 batch_size > 8)\n")
+    filtered_results = kb.search(
+        test_query,
+        where_filter={
+            "$and": [
+                {"gpu": "H800"},
+                {"batch_size": {"$gt": 8}},
+            ]
+        },
+    )
+    for res in filtered_results:
+        print(
+            f"✅ 过滤命中 | gpu={res.get('gpu')} | batch_size={res.get('batch_size')} | "
+            f"score={res.get('score')}"
+        )
+
+    # 6. 测试 as_retriever + filter（LangChain 标准用法）
+    print("\nStep 6: 测试 as_retriever + filter\n")
+    retriever = kb.as_retrieriter(k=3, max_distance=0.6)
+    docs = retriever.invoke(
+        "性能瓶颈",
+        filter={"accuracy": {"$gt": 0.90}},  # 利用 runtime_info 中的 accuracy
+    )
+    print(f"Retriever 返回 {len(docs)} 个文档")
+    for doc in docs:
+        print(
+            f" - score={doc.metadata.get('score')}, accuracy={doc.metadata.get('accuracy')}"
         )
