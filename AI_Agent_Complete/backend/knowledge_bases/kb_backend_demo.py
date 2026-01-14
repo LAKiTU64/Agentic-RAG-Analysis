@@ -22,12 +22,25 @@ async def upload(file: UploadFile = File(...)):
 
     # 3. 交给知识库管理器处理（它会校验类型、加载、切片、入库）
     try:
-        result = kb.add_document(tmp_path)
+        # 指定override_filename以保留原始文件名
+        result = kb.add_document(tmp_path, override_filename=file.filename)
         if not result["ok"]:
             raise HTTPException(400, result.get("error", "未知错误"))
         return {"status": "success", "document_id": result["document_id"]}
     finally:
         os.unlink(tmp_path)
+
+
+# 更新元数据的接口
+@router.patch("/document/{doc_id}/metadata")
+async def update_metadata(doc_id: str, metadata: dict):
+    """
+    接收格式: {"model_name": "xxx", "any_other_key": "xxx"}
+    """
+    result = kb.update_document_metadata(doc_id, metadata)
+    if not result["ok"]:
+        raise HTTPException(400, result.get("error", "更新失败"))
+    return {"status": "success"}
 
 
 @router.post("/search")
