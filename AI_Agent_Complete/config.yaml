@@ -17,8 +17,8 @@ models_path: "/workspaces/"
 # - Linux: "/data/models"
 
 # 本地LLM路径（必须配置）
-# offline_qwen_path: "/workspaces/models/Qwen3-30B-A3B-Instruct-2507"
-offline_qwen_path: "/workspaces/models/Qwen3-4B-Instruct-2507"
+offline_qwen_path: "/workspaces/models/Qwen3-30B-A3B-Instruct-2507"
+# offline_qwen_path: "/workspaces/models/Qwen3-4B-Instruct-2507"
 
 
 # ============================================================
@@ -38,7 +38,7 @@ vector_store:
 
 server:
   host: "0.0.0.0"
-  port: 9001
+  port: 9010
 
 # SGlang服务配置
 sglang_service:
