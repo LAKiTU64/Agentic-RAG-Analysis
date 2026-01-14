@@ -4,7 +4,7 @@ import shutil
 import uuid
 import hashlib
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 from langchain_chroma import Chroma
 from chromadb.config import Settings
@@ -15,7 +15,7 @@ import torch
 
 
 # --- Config ---
-DEFAULT_SEARCH_K = 3
+DEFAULT_SEARCH_K = 5
 MAX_DISTANCE_THRESHOLD = 0.5  # MAX_DISTANCE_THRESHOLD 越小，检索条件越严格
 
 # 北京时间
@@ -119,13 +119,17 @@ class VectorKBManager:
         overwrite_document_id: Optional[str] = None,
         chunking_strategy: Optional[str] = None,
         runtime_info: Optional[Dict[str, Any]] = None,
+        override_filename: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         导入文档到向量库（切片后入库）。
 
         参数：
         - document_id: 可选，传入则使用指定 UUID（例如来自上层文档表）
-        - overwrite_document_id: 可选，如果你想“更新”某个已有文档，传它会先按该 id 删除旧 chunks，再写入新 chunks
+        - overwrite_document_id: 可选，如果想“更新”某个已有文档，传它会先按该 id 删除旧 chunks，再写入新 chunks
+        - chunking_strategy: 可选，指定分块策略，默认策略default，后续将会维护其他策略
+        - runtime_info: 可选，传入的sglang运行时元数据字典，写入每个 chunk 的 metadata 中
+        - override_filename: 可选，覆盖文件名（用于前端展示）
 
         返回：
         - 结构化结果，便于 Web/接口层使用
@@ -135,8 +139,10 @@ class VectorKBManager:
         if not os.path.exists(file_path):
             return {"ok": False, "error": f"file not found: {file_path}"}
 
-        # 提取基础metadata
-        filename = os.path.basename(file_path)
+        # 提取基础metadata；如果传了 override_filename 就用它作为实际文件名（以防文件名是临时文件tmpxxx）
+        filename = (
+            override_filename if override_filename else os.path.basename(file_path)
+        )
         add_time = datetime.now(BEIJING_TZ).isoformat()
         doc_hash = self._compute_file_hash(file_path)
 
@@ -288,54 +294,72 @@ class VectorKBManager:
 
     def get_overview(self) -> Dict[str, Any]:
         """
-        轻量概览：返回切片数、文档数、最近导入时间等。
+        知识库概览：返回切片数、文档数、文档元数据
         """
         assert self.vectorstore is not None
-
         all_data = self.vectorstore.get(include=["metadatas"])
         metadatas = all_data.get("metadatas", []) or []
 
-        if os.path.exists(self.persist_directory):
-            ctime = os.path.getctime(self.persist_directory)
-            create_time_str = datetime.fromtimestamp(ctime, BEIJING_TZ).strftime(
-                "%Y-%m-%d %H:%M:%S"
-            )
-        else:
-            create_time_str = "Unknown"
+        # doc_stats 结构调整，存储完整的元数据字典
+        doc_stats: Dict[str, Dict[str, Any]] = {}
 
-        doc_stats: Dict[
-            str, Tuple[str, str, str]
-        ] = {}  # did -> (add_time, filename, doc_hash)
         for meta in metadatas:
             did = meta.get("document_id")
             atime = meta.get("add_time")
-            fname = meta.get("filename")
-            dhash = meta.get("doc_hash")
-            mname = meta.get("model_name")
-            if did and atime:
-                if did not in doc_stats or atime > doc_stats[did][0]:
-                    doc_stats[did] = (atime, fname, dhash)
+            if did:
+                # 记录该 document_id 下最新的元数据（或者第一条）
+                if did not in doc_stats or (
+                    atime and atime > doc_stats[did].get("add_time", "")
+                ):
+                    doc_stats[did] = meta
 
-        sorted_docs = sorted(doc_stats.items(), key=lambda x: x[1][0], reverse=True)
-        latest_update = sorted_docs[0][1][0] if sorted_docs else "N/A"
+        sorted_docs = sorted(
+            doc_stats.values(), key=lambda x: x.get("add_time", ""), reverse=True
+        )
 
         return {
             "persist_directory": self.persist_directory,
-            "create_time": create_time_str,
-            "latest_update": latest_update,
             "total_chunks": len(metadatas),
             "total_documents": len(doc_stats),
-            "documents": [
-                {
-                    "document_id": did,
-                    "add_time": atime,
-                    "filename": fname,
-                    "doc_hash": dhash,
-                    "model_name": mname,
-                }
-                for did, (atime, fname, dhash) in sorted_docs
-            ],
+            "documents": sorted_docs,  # 直接返回包含所有元数据的列表
         }
+
+    def update_document_metadata(
+        self, document_id: str, new_metadata: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """更新指定文档的所有 chunks 的元数据"""
+        assert self.vectorstore is not None
+
+        # 禁止修改的核心字段
+        protected_keys = ["document_id", "doc_hash", "add_time"]
+        filtered_metadata = {
+            k: v for k, v in new_metadata.items() if k not in protected_keys
+        }
+
+        try:
+            # 1. 获取该文档所有的 chunk ID 和 现有元数据
+            existing_data = self.vectorstore.get(
+                where={"document_id": document_id}, include=["metadatas"]
+            )
+            ids = existing_data.get("ids", [])
+            if not ids:
+                return {"ok": False, "error": "未找到对应的文档chunk"}
+
+            metadatas = existing_data.get("metadatas", [])
+
+            # 2. 准备更新后的元数据列表
+            updated_metadatas = []
+            for old_meta in metadatas:
+                new_meta = old_meta.copy()
+                new_meta.update(filtered_metadata)
+                updated_metadatas.append(new_meta)
+
+            # 3. 执行更新
+            self.vectorstore._collection.update(ids=ids, metadatas=updated_metadatas)
+            return {"ok": True, "document_id": document_id}
+        except Exception as e:
+            print(f"元数据更新错误: {str(e)}")  # 后台打印具体错误
+            return {"ok": False, "error": str(e)}
 
     def reset_index(self) -> None:
         """重置向量库（物理删除持久化目录并重建）"""
