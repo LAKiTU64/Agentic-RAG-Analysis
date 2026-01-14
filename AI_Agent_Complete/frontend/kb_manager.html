@@ -48,10 +48,42 @@
         }
 
         .document {
+            border: 1px solid #e2e8f0;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 8px;
             display: flex;
             justify-content: space-between;
-            padding: 12px 0;
-            border-bottom: 1px solid #e2e8f0;
+            align-items: flex-start;
+            background: white;
+        }
+
+        .meta-info {
+            font-size: 0.85em;
+            color: #64748b;
+            line-height: 1.6;
+        }
+
+        .meta-tag {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 5px;
+            font-family: monospace;
+        }
+
+        .actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-edit {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 4px;
+            cursor: pointer;
         }
 
         .btn {
@@ -205,16 +237,48 @@
                     const docEl = document.createElement('div');
                     docEl.className = 'document';
                     docEl.innerHTML = `
-                        <div>
-                            <strong>${doc.filename}</strong><br>
-                            <small>添加时间: ${new Date(doc.add_time).toLocaleString()}</small>
+                        <div class="meta-info">
+                            <strong style="font-size:1.1em; color:#1e293b">${doc.filename}</strong><br>
+                            <div><span class="meta-tag">ID:</span> ${doc.document_id}</div>
+                            <div><span class="meta-tag">HASH:</span> ${doc.doc_hash || 'N/A'}</div>
+                            <div><span class="meta-tag">MODEL:</span> ${doc.model_name || '未设置'}</div>
+                            <div><span class="meta-tag">TIME:</span> ${new Date(doc.add_time).toLocaleString()}</div>
                         </div>
-                        <button class="btn btn-delete" onclick="deleteDocument('${doc.document_id}')">删除</button>
+                        <div class="actions">
+                            <button class="btn-edit" onclick="editMetadata('${doc.document_id}', '${doc.model_name || ''}')">修改元数据</button>
+                            <button class="btn btn-delete" onclick="deleteDocument('${doc.document_id}')">删除</button>
+                        </div>
                     `;
                     listEl.appendChild(docEl);
                 });
             } catch (error) {
                 console.error('获取文档列表失败:', error);
+            }
+        }
+
+        // 新增：编辑元数据的简单实现（可以使用 prompt，高级一点可以用 modal）
+        async function editMetadata(docId, currentModel) {
+            const newModel = prompt("请输入新的 model_name:", currentModel);
+            if (newModel === null) return;
+
+            try {
+                const response = await fetch(`${API_URL}/document/${docId}/metadata`, {
+                    method: 'PATCH', // 确保是 PATCH
+                    headers: {
+                        'Content-Type': 'application/json' // 必须声明 JSON 格式
+                    },
+                    body: JSON.stringify({ model_name: newModel }) // 发送键值对
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.detail || '更新失败');
+                }
+
+                alert('修改成功！');
+                await refreshFileList(); // 刷新列表看结果
+            } catch (error) {
+                alert(error.message);
             }
         }
 
