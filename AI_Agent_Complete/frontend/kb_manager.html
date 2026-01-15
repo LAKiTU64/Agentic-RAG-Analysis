@@ -148,6 +148,38 @@
         </div>
     </div>
 
+    <!-- Metadata Modal -->
+    <div id="meta-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4);">
+        <div style="max-width:800px; margin:60px auto; background:#fff; border-radius:10px; padding:16px;">
+            <div style="display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-weight:700; font-size:18px;">编辑元数据</div>
+                    <div id="meta-modal-title" style="color:#64748b; font-size:13px;"></div>
+                </div>
+                <button class="btn btn-delete" id="meta-close-btn" type="button">关闭</button>
+            </div>
+
+            <div style="margin-top:12px; max-height:60vh; overflow:auto;">
+                <table style="width:100%; border-collapse:collapse;">
+                    <thead>
+                        <tr style="text-align:left; border-bottom:1px solid #e2e8f0;">
+                            <th style="padding:8px;">Key</th>
+                            <th style="padding:8px;">Value</th>
+                            <th style="padding:8px; width:90px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="meta-tbody"></tbody>
+                </table>
+            </div>
+
+            <div style="display:flex; gap:10px; margin-top:12px; justify-content:flex-end;">
+                <button class="btn" id="meta-add-row-btn" type="button">新增字段</button>
+                <button class="btn" id="meta-save-btn" type="button">保存</button>
+            </div>
+        </div>
+    </div>
+
+
     <script>
         // 前端逻辑极简版（MVP只需核心功能）
         const API_URL = window.location.origin;
@@ -245,7 +277,7 @@
                             <div><span class="meta-tag">TIME:</span> ${new Date(doc.add_time).toLocaleString()}</div>
                         </div>
                         <div class="actions">
-                            <button class="btn-edit" onclick="editMetadata('${doc.document_id}', '${doc.model_name || ''}')">修改元数据</button>
+                            <button class="btn-edit" onclick="openMetadataModal('${doc.document_id}', '${doc.filename || ''}')">修改元数据</button>
                             <button class="btn btn-delete" onclick="deleteDocument('${doc.document_id}')">删除</button>
                         </div>
                     `;
@@ -256,31 +288,184 @@
             }
         }
 
-        // 新增：编辑元数据的简单实现（可以使用 prompt，高级一点可以用 modal）
-        async function editMetadata(docId, currentModel) {
-            const newModel = prompt("请输入新的 model_name:", currentModel);
-            if (newModel === null) return;
+        const protectedKeys = new Set(["document_id", "doc_hash", "add_time"]);
 
+        let currentDocId = null;
+        let originalMetadata = {};
+        let rowStates = [];
+        // rowStates: [{origKey, key, value, deleted:false}]
+
+        function showModal(show) {
+            document.getElementById("meta-modal").style.display = show ? "block" : "none";
+        }
+
+        document.getElementById("meta-close-btn").addEventListener("click", () => showModal(false));
+
+        document.getElementById("meta-add-row-btn").addEventListener("click", () => {
+            rowStates.push({ origKey: null, key: "", value: "", deleted: false, isNew: true });
+            renderMetaTable();
+        });
+
+        document.getElementById("meta-save-btn").addEventListener("click", saveMetadataChanges);
+
+        async function openMetadataModal(docId, filename) {
+            currentDocId = docId;
+            document.getElementById("meta-modal-title").textContent = `文档：${filename} | ID: ${docId}`;
+
+            // 拉取该文档完整元数据
+            const res = await fetch(`${API_URL}/document/${docId}/metadata`);
+            if (!res.ok) {
+                alert("获取元数据失败");
+                return;
+            }
+            const data = await res.json();
+            originalMetadata = data.metadata || {};
+
+            // 转成行
+            rowStates = Object.entries(originalMetadata).map(([k, v]) => ({
+                origKey: k,
+                key: k,
+                value: v,
+                deleted: false,
+                isNew: false
+            }));
+
+            // key排序：protected靠前
+            rowStates.sort((a, b) => {
+                const ap = protectedKeys.has(a.key) ? 0 : 1;
+                const bp = protectedKeys.has(b.key) ? 0 : 1;
+                return ap - bp || a.key.localeCompare(b.key);
+            });
+
+            renderMetaTable();
+            showModal(true);
+        }
+
+        function renderMetaTable() {
+            const tbody = document.getElementById("meta-tbody");
+            tbody.innerHTML = "";
+
+            rowStates.forEach((row, idx) => {
+                if (row.deleted) return;
+
+                const tr = document.createElement("tr");
+                tr.style.borderBottom = "1px solid #f1f5f9";
+
+                const keyTd = document.createElement("td");
+                keyTd.style.padding = "8px";
+
+                const valTd = document.createElement("td");
+                valTd.style.padding = "8px";
+
+                const actTd = document.createElement("td");
+                actTd.style.padding = "8px";
+
+                const isProtected = protectedKeys.has(row.origKey || row.key);
+
+                // key input
+                const keyInput = document.createElement("input");
+                keyInput.value = row.key ?? "";
+                keyInput.style.width = "100%";
+                keyInput.disabled = isProtected; // protected 不允许改key
+                keyInput.addEventListener("input", (e) => {
+                    rowStates[idx].key = e.target.value;
+                });
+                keyTd.appendChild(keyInput);
+
+                // value input（用 textarea 兼容长文本）
+                const valInput = document.createElement("textarea");
+                valInput.value = (row.value ?? "").toString();
+                valInput.rows = 1;
+                valInput.style.width = "100%";
+                valInput.disabled = false; // protected key 允许改 value 吗？通常也不允许。这里也禁用：
+                if (isProtected) valInput.disabled = true;
+
+                valInput.addEventListener("input", (e) => {
+                    rowStates[idx].value = e.target.value;
+                });
+                valTd.appendChild(valInput);
+
+                // delete button
+                const delBtn = document.createElement("button");
+                delBtn.className = "btn btn-delete";
+                delBtn.textContent = "删除";
+                delBtn.type = "button";
+                delBtn.disabled = isProtected; // protected 不允许删
+                delBtn.addEventListener("click", () => {
+                    rowStates[idx].deleted = true;
+                    renderMetaTable();
+                });
+                actTd.appendChild(delBtn);
+
+                tr.appendChild(keyTd);
+                tr.appendChild(valTd);
+                tr.appendChild(actTd);
+                tbody.appendChild(tr);
+            });
+        }
+
+        function computePatchPayload() {
+            // 1) delete：被标记删除的原key（新加行删掉就忽略）
+            const deleteKeys = rowStates
+                .filter(r => r.deleted && r.origKey) // 只有原本存在的key才需要delete
+                .map(r => r.origKey)
+                .filter(k => !protectedKeys.has(k));
+
+            // 2) set：将当前未删除行汇总成最终键值
+            // 允许改key：如果改了key，相当于 delete oldKey + set newKey
+            const setObj = {};
+            const keySeen = new Set();
+
+            for (const r of rowStates) {
+                if (r.deleted) continue;
+
+                const k = (r.key || "").trim();
+                if (!k) continue;
+
+                if (protectedKeys.has(r.origKey || k)) continue;
+
+                if (keySeen.has(k)) {
+                    throw new Error(`存在重复的 key: ${k}`);
+                }
+                keySeen.add(k);
+
+                setObj[k] = r.value;
+
+                // 如果是“改名”(origKey存在且不同)，额外删除 origKey
+                if (r.origKey && r.origKey !== k && !protectedKeys.has(r.origKey)) {
+                    deleteKeys.push(r.origKey);
+                }
+            }
+
+            // 去重delete
+            const deleteUniq = [...new Set(deleteKeys)];
+            return { set: setObj, delete: deleteUniq };
+        }
+
+        async function saveMetadataChanges() {
             try {
-                const response = await fetch(`${API_URL}/document/${docId}/metadata`, {
-                    method: 'PATCH', // 确保是 PATCH
-                    headers: {
-                        'Content-Type': 'application/json' // 必须声明 JSON 格式
-                    },
-                    body: JSON.stringify({ model_name: newModel }) // 发送键值对
+                const payload = computePatchPayload();
+
+                const resp = await fetch(`${API_URL}/document/${currentDocId}/metadata`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
                 });
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.detail || '更新失败');
+                if (!resp.ok) {
+                    const err = await resp.json().catch(() => ({}));
+                    throw new Error(err.detail || err.error || "保存失败");
                 }
 
-                alert('修改成功！');
-                await refreshFileList(); // 刷新列表看结果
-            } catch (error) {
-                alert(error.message);
+                showModal(false);
+                await refreshFileList();
+                alert("保存成功");
+            } catch (e) {
+                alert(e.message || "保存失败");
             }
         }
+
+
 
         // 初始加载
         refreshFileList();
