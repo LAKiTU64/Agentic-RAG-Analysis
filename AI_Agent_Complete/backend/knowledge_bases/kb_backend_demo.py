@@ -33,11 +33,24 @@ async def upload(file: UploadFile = File(...)):
 
 # 更新元数据的接口
 @router.patch("/document/{doc_id}/metadata")
-async def update_metadata(doc_id: str, metadata: dict):
+async def update_metadata(doc_id: str, payload: dict):
     """
-    接收格式: {"model_name": "xxx", "any_other_key": "xxx"}
+    推荐格式：
+    {
+      "set": {"model_name":"xxx", "foo":123},
+      "delete": ["bar", "baz"]
+    }
+
+    兼容旧格式：{"model_name":"xxx"}
     """
-    result = kb.update_document_metadata(doc_id, metadata)
+    if "set" in payload or "delete" in payload:
+        set_data = payload.get("set", {}) or {}
+        delete_keys = payload.get("delete", []) or []
+    else:
+        set_data = payload
+        delete_keys = []
+
+    result = kb.update_document_metadata(doc_id, set_data, delete_keys=delete_keys)
     if not result["ok"]:
         raise HTTPException(400, result.get("error", "更新失败"))
     return {"status": "success"}
@@ -52,7 +65,7 @@ async def search(query: str):
 # 添加这些路由到你的 FastAPI app
 @router.get("/documents")
 async def list_documents():
-    """获取文档列表（前端需要）"""
+    """获取文档列表和概览"""
     return kb.get_overview()
 
 
@@ -63,6 +76,15 @@ async def delete_document_api(doc_id: str):
     if not result["ok"]:
         raise HTTPException(404, "文档不存在")
     return {"status": "deleted"}
+
+
+@router.get("/document/{doc_id}/metadata")
+async def get_metadata(doc_id: str):
+    """获取单个文档的元数据"""
+    result = kb.get_document_metadata(doc_id)
+    if not result["ok"]:
+        raise HTTPException(404, result.get("error", "未找到文档"))
+    return result
 
 
 __all__ = ["router"]
