@@ -324,20 +324,48 @@ class VectorKBManager:
             "documents": sorted_docs,  # 直接返回包含所有元数据的列表
         }
 
-    def update_document_metadata(
-        self, document_id: str, new_metadata: Dict[str, Any]
-    ) -> Dict[str, Any]:
-        """更新指定文档的所有 chunks 的元数据"""
+    def get_document_metadata(self, document_id: str) -> Dict[str, Any]:
+        """返回该 document_id 的一份代表性元数据（用于前端编辑展示）"""
         assert self.vectorstore is not None
-
-        # 禁止修改的核心字段
-        protected_keys = ["document_id", "doc_hash", "add_time"]
-        filtered_metadata = {
-            k: v for k, v in new_metadata.items() if k not in protected_keys
-        }
+        try:
+            uuid.UUID(document_id)
+        except Exception:
+            return {"ok": False, "error": "document_id is not a valid UUID"}
 
         try:
-            # 1. 获取该文档所有的 chunk ID 和 现有元数据
+            data = self.vectorstore.get(
+                where={"document_id": document_id}, include=["metadatas"]
+            )
+            metas = data.get("metadatas", []) or []
+            if not metas:
+                return {"ok": False, "error": "document not found"}
+            # 取第一条chunk的元数据作为代表（正常情况下同一文档的chunk元数据应一致）
+            meta = metas[0]
+            return {"ok": True, "document_id": document_id, "metadata": meta}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+    def update_document_metadata(
+        self,
+        document_id: str,
+        set_metadata: Dict[str, Any],
+        *,
+        delete_keys: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """更新指定文档所有chunks元数据：支持 set(新增/修改) + delete(删除key)"""
+        assert self.vectorstore is not None
+
+        protected_keys = {"document_id", "doc_hash", "add_time"}
+        delete_keys = delete_keys or []
+
+        # 过滤 set 中的 protected
+        filtered_set = {
+            k: v for k, v in (set_metadata or {}).items() if k not in protected_keys
+        }
+        # 过滤 delete 中的 protected
+        filtered_delete = [k for k in delete_keys if k not in protected_keys]
+
+        try:
             existing_data = self.vectorstore.get(
                 where={"document_id": document_id}, include=["metadatas"]
             )
@@ -345,20 +373,24 @@ class VectorKBManager:
             if not ids:
                 return {"ok": False, "error": "未找到对应的文档chunk"}
 
-            metadatas = existing_data.get("metadatas", [])
+            metadatas = existing_data.get("metadatas", []) or []
 
-            # 2. 准备更新后的元数据列表
             updated_metadatas = []
             for old_meta in metadatas:
-                new_meta = old_meta.copy()
-                new_meta.update(filtered_metadata)
+                new_meta = dict(old_meta or {})
+
+                # delete
+                for k in filtered_delete:
+                    new_meta.pop(k, None)
+
+                # set/update
+                new_meta.update(filtered_set)
+
                 updated_metadatas.append(new_meta)
 
-            # 3. 执行更新
             self.vectorstore._collection.update(ids=ids, metadatas=updated_metadatas)
             return {"ok": True, "document_id": document_id}
         except Exception as e:
-            print(f"元数据更新错误: {str(e)}")  # 后台打印具体错误
             return {"ok": False, "error": str(e)}
 
     def reset_index(self) -> None:
