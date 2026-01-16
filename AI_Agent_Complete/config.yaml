@@ -29,7 +29,7 @@ vector_store:
   embedding_model: "bge-small-zh-v1.5"
   chunk_size: 300
   chunk_overlap: 100
-  default_search_k: 5
+  default_search_k: 8
   similarity_threshold: 0.5
 
 # ============================================================
