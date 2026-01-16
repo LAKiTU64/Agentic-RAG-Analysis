@@ -177,7 +177,6 @@ class OfflineQwenClient:
             do_sample = False
             sys_content = system_prompt or (
                 "你是一个高性能计算专家。请直接输出结果，"
-                "严禁输出 <think>...</think> 思考过程，"
                 "严禁输出 Markdown 代码块标记，只输出纯 JSON 字符串。"
             )
             messages.append({"role": "system", "content": sys_content})
