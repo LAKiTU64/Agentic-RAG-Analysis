@@ -468,7 +468,7 @@ if __name__ == "__main__":
     print("\nStep 2: 批量导入\n")
     # 模拟一个统一的 runtime_info（所有文档共享）
     mock_runtime_info = {
-        "model_name": "qwen2-7b",
+        "model": "qwen2-7b",
         "batch_size": 16,  # 改为 >8，方便后续过滤
         "gpu": "H800",
         "accuracy": 0.91,  # 新增字段，用于 filter 测试

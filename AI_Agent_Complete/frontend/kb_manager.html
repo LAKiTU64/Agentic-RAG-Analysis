@@ -273,7 +273,7 @@
                             <strong style="font-size:1.1em; color:#1e293b">${doc.filename}</strong><br>
                             <div><span class="meta-tag">ID:</span> ${doc.document_id}</div>
                             <div><span class="meta-tag">HASH:</span> ${doc.doc_hash || 'N/A'}</div>
-                            <div><span class="meta-tag">MODEL:</span> ${doc.model_name || '未设置'}</div>
+                            <div><span class="meta-tag">MODEL:</span> ${doc.model || '未设置'}</div>
                             <div><span class="meta-tag">TIME:</span> ${new Date(doc.add_time).toLocaleString()}</div>
                         </div>
                         <div class="actions">

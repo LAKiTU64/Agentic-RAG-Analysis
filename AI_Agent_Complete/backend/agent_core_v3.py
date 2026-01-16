@@ -184,19 +184,12 @@ class AIAgent:
             else:
                 return "chat"
 
-    async def _parse_analysis_params(self, user_query: str) -> Dict[str, Any]:
+    async def _parse_raw_params(self, user_query: str) -> Dict[str, Any]:
         """
-        从用户查询中提取模型名称和分析参数。
-        返回示例: {"model": "llama7-b", "params": {"batch_size": 1, "input_len": 128, "output_len": 1}, "analysis_type": "all"}
+        从用户查询中提取原始的模型名称和分析参数。后续将其转为性能分析的参数，或者用于RAG-QA的filter。
+        返回示例请参考下面的prompt。
 
-        未识别的字段使用默认值：batch_size=1, input_len=128, output_len=1。
         """
-
-        DEFAULT_PARAMS = {
-            "batch_size": 1,
-            "input_len": 128,
-            "output_len": 1,
-        }
 
         available_models = list(self.model_mappings.keys())
         models_str = ", ".join([f'"{m}"' for m in available_models])
@@ -211,21 +204,23 @@ class AIAgent:
             请提取以下三个字段，并以 JSON 格式输出（仅输出标准的 JSON 字符串，不要包含任何解释）：
             
             - **model**: 模型名称。必须严格匹配列表：[{models_str}]。如果找不到匹配项则留空。
-            - **params**: 包含 batch_size, input_len, output_len 的整数值。未提及的参数留空或忽略。
-            - **analysis_type**: 分析类型，取值只能是 "nsys", "ncu", "all"。判断逻辑如下：
+            - **params**: 包含 batch_size, input_len, output_len 的整数值。未提及的参数不要输出。
+            - **analysis_type**: 分析类型，取值只能是 "nsys", "ncu"。判断逻辑如下：
                 1. **nsys**: 用户提到 "nsys"、"全局"、"整体"、"profile"、"timeline"。
                 2. **ncu**: 用户提到 "ncu"、"深度"、"kernel细节"、"指令级"。
-                3. **all**: 用户未指定类型，或者同时提到了以上两者，或者说 "全套"、"完整"。
 
             ### 2. 参考示例
             User: "跑一下qwen3-4b，batch_size设为16"
-            Output: {{"model": "qwen3-4b", "params": {{"batch_size": 16}}, "analysis_type": "all"}}
+            Output: {{"model": "qwen3-4b", "params": {{"batch_size": 16}}, "analysis_type": null}}
 
-            User: "帮我给llama-7b做个ncu深度分析"
-            Output: {{"model": "llama-7b", "params": {{}}, "analysis_type": "ncu"}}
+            User: "帮我给模型做个ncu深度分析"
+            Output: {{"model": null, "params": {{}}, "analysis_type": "ncu"}}
+            
+            User: "llama-7b在batch_size=1、input_len=128的性能分析情况如何？"
+            Output: {{"model": "llama-7b", "params": {{"batch_size": 1, "input_len": 128}}, "analysis_type": null}}
 
             User: "对qwen-7b做一下全局分析，batch_size=1，input_len=128，output_len=1"
-            Output: {{"model": "qwen", "params": {{"batch_size": 1, "input_len": 128, "output_len": 1}}, "analysis_type": "nsys"}}
+            Output: {{"model": "qwen-7b", "params": {{"batch_size": 1, "input_len": 128, "output_len": 1}}, "analysis_type": "nsys"}}
 
             ### 3. 用户输入（主要的判断依据）
             {user_query}
@@ -276,15 +271,13 @@ class AIAgent:
 
         parsed_params: Dict[str, Any] = {}
         model_name = None
-        analysis_type = "all"  # 默认值all
+        analysis_type = None
 
         try:
             raw = self.llm_client.generate(
                 prompt, max_tokens=512, mode="structured"
             ).strip()
             json_text = _strip_code_fence(raw)
-
-            print(json_text)
 
             # 如果 raw 不是纯 JSON，则尝试抽取其中第一个 JSON 对象
             if not (json_text.startswith("{") and json_text.endswith("}")):
@@ -296,11 +289,13 @@ class AIAgent:
             model_name = result.get("model")
             parsed_params = result.get("params", {}) or {}
             raw_type = result.get("analysis_type")
-            if raw_type in ["nsys", "ncu", "all"]:
+            if raw_type in ["nsys", "ncu"]:
                 analysis_type = raw_type
+            else:
+                analysis_type = None
         except Exception as e:
             print(
-                f"[_parse_analysis_params] LLM parse failed: {e}. raw={locals().get('raw', None)!r}"
+                f"[_parse_raw_params] LLM parse failed: {e}. raw={locals().get('raw', None)!r}"
             )
 
         # 规则兜底：尝试从 query 中提取模型名（如果 LLM 没拿到）
@@ -312,11 +307,11 @@ class AIAgent:
                     model_name = model
                     break
 
-        # 合并参数：用解析出的值覆盖默认值（仅三项；后续可扩展为白名单）
-        final_params = DEFAULT_PARAMS.copy()
+        # 合并参数，只保留用户提到的字段
+        final_params: Dict[str, int] = {}
         if isinstance(parsed_params, dict):
             for key in ("batch_size", "input_len", "output_len"):
-                if key in parsed_params:
+                if key in parsed_params and parsed_params[key] not in (None, ""):
                     try:
                         final_params[key] = int(parsed_params[key])
                     except (ValueError, TypeError):
@@ -327,6 +322,80 @@ class AIAgent:
             "params": final_params,
             "analysis_type": analysis_type,
         }
+
+    def _finalize_params_for_analysis(self, raw: Dict[str, Any]) -> Dict[str, Any]:
+        """对message解析的参数做默认值补全，用于性能分析"""
+
+        defaults = {"batch_size": 1, "input_len": 128, "output_len": 1}
+        params = {**defaults, **(raw.get("params") or {})}
+        analysis_type = raw.get("analysis_type")
+
+        return {
+            "model": raw.get("model"),
+            "params": params,
+            "analysis_type": analysis_type,
+        }
+
+    def _finalize_params_for_rag_filter(
+        self, raw: Dict[str, Any]
+    ) -> Optional[Dict[str, Any]]:
+        """
+        将message解析的参数转化为chroma语法的where_fileter
+         - 把解析出来的所有字段放在一个 dict 中，作为 where_filter
+         - 如果value是 None/null/空字符串，则忽略该字段
+         - _parse_raw_params返回的是一个嵌套字典，而chroma的metadata是扁平的，转换成where_filter时需要把params拍平
+         - 目前只实现了=，暂不支持>、<等范围查询
+        """
+
+        if not isinstance(raw, dict):
+            return None
+
+        def is_empty(v: Any) -> bool:
+            """判断值是否为空（None、空字符串、"none"、"null"）"""
+            if v is None:
+                return True
+            if isinstance(v, str) and v.strip() in ("", "none", "null"):
+                return True
+            return False
+
+        def coerce_scalar(v: Any) -> Any:
+            """试图把字符串形式的数字转为实际格式，例如 "128" -> 128 or "1.28" -> 1.28"""
+            if isinstance(v, str):
+                s = v.strip()
+                # int
+                if s.isdigit() or (s.startswith("-") and s[1:].isdigit()):
+                    try:
+                        return int(s)
+                    except Exception:
+                        return v
+                # float
+                try:
+                    if "." in s:
+                        return float(s)
+                except Exception:
+                    pass
+            return v
+
+        where: Dict[str, Any] = {}
+
+        # 1) 顶层字段（除了 params）
+        for k, v in raw.items():
+            if k == "params":
+                continue
+            if is_empty(v):
+                continue
+            where[k] = coerce_scalar(v)
+
+        # 2) params 拍平
+        params = raw.get("params")
+        if isinstance(params, dict):
+            for k, v in params.items():
+                if is_empty(v):
+                    continue
+                where[k] = coerce_scalar(v)
+
+        print(where)
+        return where or None
 
     def _resolve_model_path(self, model_name: str) -> Optional[str]:
         """
@@ -357,10 +426,12 @@ class AIAgent:
         """
         try:
             # Step 1: 解析分析参数（model + kwargs）
-            parsed = await self._parse_analysis_params(message)
+            parsed_raw = await self._parse_raw_params(message)
+            parsed = self._finalize_params_for_analysis(parsed_raw)
+
             model_name = parsed.get("model")
             params = parsed.get("params", {})
-            analysis_type = parsed.get("analysis_type", "all")
+            analysis_type = parsed.get("analysis_type", None)
 
             available = ", ".join(self.model_mappings.keys())
             if not model_name:
@@ -391,8 +462,12 @@ class AIAgent:
         执行知识库检索，并基于检索结果生成严谨、有依据的回答。
         """
 
-        # Step 1: 检索相关知识片段
-        retrieved_contexts = self.kb.search(query=message, k=self.default_search_k)
+        # Step 1: 构建where_filter，检索相关知识片段
+        parsed_raw = await self._parse_raw_params(message)
+        where_filter = self._finalize_params_for_rag_filter(parsed_raw)
+        retrieved_contexts = self.kb.search(
+            query=message, k=self.default_search_k, where_filter=where_filter
+        )
 
         # Step 2: 构建 RAG 上下文和历史对话
         rag_context = ""
@@ -871,7 +946,7 @@ class AIAgent:
 # ==================== Main CLI ====================
 if __name__ == "__main__":
     # 1. 加载 Config
-    config_path = "config.yaml"
+    config_path = "/workspaces/ai-agent/AI_Agent_Complete/config.yaml"
     if not os.path.exists(config_path):
         print(f"❌ 错误: 找不到 {config_path}")
         sys.exit(1)
@@ -888,7 +963,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     # 3. 加载知识库
-    document_dir = Path("documents")
+    document_dir = Path("/workspaces/ai-agent/AI_Agent_Complete/documents")
     if document_dir.exists():
         print("📚 正在加载知识库文档...")
         count = 0
