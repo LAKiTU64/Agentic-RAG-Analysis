@@ -56,7 +56,7 @@ class AIAgent:
         self.persist_directory = kb_config.get("persist_directory")
         self.chunk_size = kb_config.get("chunk_size")
         self.chunk_overlap = kb_config.get("chunk_overlap")
-        self.default_search_k = kb_config.get("default_search_k", 3)
+        self.default_search_k = kb_config.get("default_search_k", 8)
         self.similarity_threshold = kb_config.get("similarity_threshold", 0.75)
         self.kb = VectorKBManager()
 
@@ -72,7 +72,7 @@ class AIAgent:
         }
 
     def _format_history_str(
-        self, history: List[Dict[str, str]], limit: Optional[int] = -1
+        self, history: List[Dict[str, str]], limit: int = -1
     ) -> str:
         """
         取出并格式化历史对话。
@@ -80,10 +80,10 @@ class AIAgent:
             history: 完整历史列表
             limit: 取最近多少轮对话。1轮=用户+Agent共2条对话。
                    -1   : (默认) 使用 self.default_history_turns
-                   None : 不限制 (取全部)
+                   0 : 不取历史对话
                    int  : 指定具体轮数
         """
-        if not history:
+        if not history or limit == 0:
             return ""
 
         if limit == -1:
@@ -184,9 +184,12 @@ class AIAgent:
             else:
                 return "chat"
 
-    async def _parse_raw_params(self, user_query: str) -> Dict[str, Any]:
+    async def _parse_raw_params(
+        self, user_query: str, rewrite_query: bool = False
+    ) -> Dict[str, Any]:
         """
-        从用户查询中提取原始的模型名称和分析参数。后续将其转为性能分析的参数，或者用于RAG-QA的filter。
+        从用户查询中提取原始的模型名称、分析参数和改写后的query。后续将其转为性能分析的参数，或者用于RAG-QA的filter。
+        经过了复杂的心理斗争，我决定把提取json和改写query放在一起，因为这样做语义更连贯。
         返回示例请参考下面的prompt。
 
         """
@@ -198,37 +201,53 @@ class AIAgent:
         history_str = self._format_history_str(self.chat_history, limit=1)
 
         prompt = f"""
-            你是一个专业的参数提取助手。请从用户的自然语言输入中提取执行参数。
-
-            ### 1. 提取目标
-            请提取以下三个字段，并以 JSON 格式输出（仅输出标准的 JSON 字符串，不要包含任何解释）：
+            你是一个专业的参数提取助手。请从用户的自然语言输入中提取执行参数，并同时生成用于向量检索的“改写查询”。
             
-            - **model**: 模型名称。必须严格匹配列表：[{models_str}]。如果找不到匹配项则留空。
-            - **params**: 包含 batch_size, input_len, output_len 的整数值。未提及的参数不要输出。
-            - **analysis_type**: 分析类型，取值只能是 "nsys", "ncu"。判断逻辑如下：
+            ### 0. 输出格式（非常重要）
+            你必须**仅输出一个标准 JSON 对象**（不能有任何解释、不能有 Markdown 代码块、不能有多余文本）。
+            JSON 必须仅包含以下 4 个字段：model, params, analysis_type, search_query。
+
+            ### 1. 字段定义
+            - **model**: 模型名称。必须严格匹配列表：[{models_str}]。如果找不到匹配项则为null。
+            - **params**: 一个必须存在的 JSON 对象，允许为空对象，包含整数键：batch_size/input_len/output_len。如果用户没提到对应键，则直接忽略。
+            - **analysis_type**: 分析类型，取值只能是 "nsys", "ncu"或null。判断逻辑如下：
                 1. **nsys**: 用户提到 "nsys"、"全局"、"整体"、"profile"、"timeline"。
                 2. **ncu**: 用户提到 "ncu"、"深度"、"kernel细节"、"指令级"。
-
+                3. null: 用户未明确提及分析类型，或用户明确提及了nsys和ncu两种分析类型。
+            - **search_query**: 改写后的“干净问题”，用于向量检索。
+                1. 只在rewrite_query为true时改写。如果rewrite_query为false，则search_query输出一个空字符串。
+                2. 改写时：移除本次输出 JSON 中的 model/params/analysis_type 等约束信息（以及与其语义等价的限定表达），只保留用户要查询的“知识点/指标/结论”。
+                3. search_query 尽量短（5~30 个汉字或单词）。如果用户问题本身已经很干净，可与原问题等价或更短。
+                4. 不要在 search_query 中添加原问题里不存在的信息。
+                
             ### 2. 参考示例
-            User: "跑一下qwen3-4b，batch_size设为16"
-            Output: {{"model": "qwen3-4b", "params": {{"batch_size": 16}}, "analysis_type": null}}
+            user_query: "用nsys和ncu跑一下qwen3-4b，batch_size设为1，output_len=1"
+            rewrite_query: false
+            Output: {{"model": "qwen3-4b", "params": {{"batch_size": 1, "output_len": 1}}, "analysis_type": null, "search_query": ""}}
 
-            User: "帮我给模型做个ncu深度分析"
-            Output: {{"model": null, "params": {{}}, "analysis_type": "ncu"}}
+            user_query: "帮我给模型做个ncu深度分析"
+            rewrite_query: false
+            Output: {{"model": null, "params": {{}}, "analysis_type": "ncu", "search_query": ""}}
             
-            User: "llama-7b在batch_size=1、input_len=128的性能分析情况如何？"
-            Output: {{"model": "llama-7b", "params": {{"batch_size": 1, "input_len": 128}}, "analysis_type": null}}
+            user_query: "llama-7b在batch_size=1、input_len=128的全局分析报告中，总kernel数有多少？"
+            rewrite_query: true
+            Output: {{"model": "llama-7b", "params": {{"batch_size": 1, "input_len": 128}}, "analysis_type": "nsys", "search_query": "总kernel数有多少？"}}
 
-            User: "对qwen-7b做一下全局分析，batch_size=1，input_len=128，output_len=1"
-            Output: {{"model": "qwen-7b", "params": {{"batch_size": 1, "input_len": 128, "output_len": 1}}, "analysis_type": "nsys"}}
+            user_query: "qwen-7b在batch_size=16的情况下瓶颈最多的kernel有哪些？"
+            rewrite_query: true
+            Output: {{"model": "qwen-7b", "params": {{"batch_size": 16}}, "analysis_type": null, "search_query": "瓶颈最多的kernel有哪些？"}}
+            
+            ### 3. 本次是否需要改写query（非常重要）
+            {str(rewrite_query).lower()}
 
-            ### 3. 用户输入（主要的判断依据）
+            ### 4. 用户输入（主要依据）
             {user_query}
             
-            ### 4. 最近对话历史（可忽略的次要判断依据，当用户提到“之前”“上一次对话”时，你可能需要从历史对话中找参数）
-            {history_str if history_str else "（无历史记录）"}
+            ### 5. 最近对话历史（可能为空）
+            #### tips: 仅当用户提到“之前/上一次/上个问题/刚才/沿用/跟前面一样”等需要你查询对话历史的关键词时，才可以纳入参考，否则忽略对话历史
+            {history_str if history_str else "对话历史为空。"}
 
-            ### 5. 你的提取结果：
+            ### 6. 你的JSON输出：
         """.strip()
 
         def _strip_code_fence(text: str) -> str:
@@ -270,8 +289,9 @@ class AIAgent:
             return None
 
         parsed_params: Dict[str, Any] = {}
-        model_name = None
-        analysis_type = None
+        model_name: Optional[str] = None
+        analysis_type: Optional[str] = None
+        search_query: Optional[str] = None
 
         try:
             raw = self.llm_client.generate(
@@ -289,10 +309,10 @@ class AIAgent:
             model_name = result.get("model")
             parsed_params = result.get("params", {}) or {}
             raw_type = result.get("analysis_type")
-            if raw_type in ["nsys", "ncu"]:
-                analysis_type = raw_type
-            else:
-                analysis_type = None
+            analysis_type = raw_type if raw_type in ("nsys", "ncu") else None
+            search_query = (
+                str(result.get("search_query", "")).strip() if rewrite_query else ""
+            )
         except Exception as e:
             print(
                 f"[_parse_raw_params] LLM parse failed: {e}. raw={locals().get('raw', None)!r}"
@@ -321,6 +341,7 @@ class AIAgent:
             "model": model_name,
             "params": final_params,
             "analysis_type": analysis_type,
+            "search_query": search_query,
         }
 
     def _finalize_params_for_analysis(self, raw: Dict[str, Any]) -> Dict[str, Any]:
@@ -462,12 +483,18 @@ class AIAgent:
         执行知识库检索，并基于检索结果生成严谨、有依据的回答。
         """
 
-        # Step 1: 构建where_filter，检索相关知识片段
-        parsed_raw = await self._parse_raw_params(message)
-        where_filter = self._finalize_params_for_rag_filter(parsed_raw)
-        retrieved_contexts = self.kb.search(
-            query=message, k=self.default_search_k, where_filter=where_filter
+        # Step 1: 构建where_filter，改写query，检索相关知识片段
+        parsed_raw = await self._parse_raw_params(message, rewrite_query=True)
+        where_filter = self._finalize_params_for_rag_filter(
+            {k: v for k, v in parsed_raw.items() if k != "search_query"}
         )
+        search_query = parsed_raw.get("search_query") or message
+        retrieved_contexts = self.kb.search(
+            query=search_query, k=self.default_search_k, where_filter=where_filter
+        )
+        # debug用：打印重写后的query和用于元数据过滤的where_filter
+        # print(f"search_query: {search_query}")
+        # print(f"where_filter: {where_filter}")
 
         # Step 2: 构建 RAG 上下文和历史对话
         rag_context = ""
@@ -477,8 +504,10 @@ class AIAgent:
                 for i, res in enumerate(retrieved_contexts)
             ]
             rag_context = "\n\n".join(rag_snippets)
+        # debug用：打印RAG召回结果
+        # print(rag_context)
 
-        history_str = self._format_history_str(self.chat_history)
+        history_str = self._format_history_str(self.chat_history, limit=1)
 
         # Step 3: 严格约束的 RAG-QA 生成
         prompt = f"""
@@ -487,10 +516,10 @@ class AIAgent:
             ### 参考资料
             {rag_context if rag_context else "（警告：未检索到相关文档，可能需要告知用户资料缺失）"}
 
-            ### 用户问题
+            ### 用户问题（主要的用户意图依据）
             {message}
-            
-            ### 对话历史（可忽略的用户意图补充）
+
+            ### 对话历史（次要、可忽略的用户意图补充）
             {history_str if history_str else "（无历史记录）"}
 
             ### 严格约束 (Strict Rules)
@@ -962,18 +991,18 @@ if __name__ == "__main__":
         print(f"❌ 初始化失败: {e}")
         sys.exit(1)
 
-    # 3. 加载知识库
-    document_dir = Path("/workspaces/ai-agent/AI_Agent_Complete/documents")
-    if document_dir.exists():
-        print("📚 正在加载知识库文档...")
-        count = 0
-        for file_path in document_dir.iterdir():
-            if file_path.is_file() and file_path.suffix in [".md", ".txt"]:
-                agent.kb.add_document(str(file_path))
-                count += 1
-        print(f"✅ 已加载 {count} 个文档。")
-    else:
-        print("⚠️ 文档目录不存在，跳过加载。")
+    # # 3. 加载知识库
+    # document_dir = Path("/workspaces/ai-agent/AI_Agent_Complete/documents")
+    # if document_dir.exists():
+    #     print("📚 正在加载知识库文档...")
+    #     count = 0
+    #     for file_path in document_dir.iterdir():
+    #         if file_path.is_file() and file_path.suffix in [".md", ".txt"]:
+    #             agent.kb.add_document(str(file_path))
+    #             count += 1
+    #     print(f"✅ 已加载 {count} 个文档。")
+    # else:
+    #     print("⚠️ 文档目录不存在，跳过加载。")
 
     # 4. 对话测试
     async def interactive_chat_loop():
