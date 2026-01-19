@@ -8,21 +8,12 @@ import os
 import sys
 import json
 import asyncio
+import uvicorn
+import yaml
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, Optional, Any
 from pydantic import BaseModel
-
-ROOT_DIR = Path(__file__).resolve().parent.parent
-BACKEND_DIR = ROOT_DIR / "backend"
-UTILS_DIR = BACKEND_DIR / "utils"
-
-for path in (ROOT_DIR, BACKEND_DIR, UTILS_DIR):
-    str_path = str(path)
-    if str_path not in sys.path:
-        sys.path.insert(0, str_path)
-
-from utils.nsys_to_ncu_analyzer import NSysToNCUAnalyzer
 from fastapi import (
     FastAPI,
     WebSocket,
@@ -35,12 +26,28 @@ from fastapi import (
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
-import yaml
+from utils.nsys_to_ncu_analyzer import NSysToNCUAnalyzer
+
+# # 添加路径（旧）
+# sys.path.insert(0, str(Path(__file__).parent))
+# sys.path.insert(0, str(Path(__file__).parent / "utils"))
+
+# 添加路径（new）
+ROOT_DIR = Path(__file__).resolve().parent.parent
+BACKEND_DIR = ROOT_DIR / "backend"
+UTILS_DIR = BACKEND_DIR / "utils"
+
+for path in (ROOT_DIR, BACKEND_DIR, UTILS_DIR):
+    str_path = str(path)
+    if str_path not in sys.path:
+        sys.path.insert(0, str_path)
+
+# new: 引入本地LLM模型
 from backend.offline_llm import get_offline_qwen_client
 
 # new: 引入知识库管理模块
 from backend.knowledge_bases.vector_kb_api import router as knowledge_base_router
+
 
 # 导入AI Agent核心 & 知识库摄取
 try:
@@ -152,6 +159,8 @@ if frontend_dir.exists():
 
 agent = None
 active_connections: Dict[str, WebSocket] = {}
+last_analysis_dir: Optional[str] = None
+# new: 获取本地LLM模型路径
 OFFLINE_QWEN_PATH = Path(os.getenv("QWEN_LOCAL_MODEL_PATH", "/workspace/Qwen3-32B"))
 
 
@@ -221,6 +230,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
+
 # new: 启动时初始化，新增知识库的支持
 @app.on_event("startup")
 async def startup_event():
@@ -230,6 +240,7 @@ async def startup_event():
         try:
             agent = AIAgent(CONFIG)
             print("✅ AI Agent初始化成功")
+            # new: 挂载知识库
             app.state.kb = agent.kb
         except Exception as e:
             print(f"⚠️ AI Agent初始化失败: {e}")
@@ -1070,6 +1081,7 @@ async def full_analysis(req: FullAnalysisRequest):
         return JSONResponse(status_code=500, content={"error": str(e)})
 
 
+# new: 新版本似乎把这部分删除了
 async def _summarize_report_to_table(report_path: Path) -> str:
     if not report_path.exists():
         raise FileNotFoundError(f"报告缺失: {report_path}")
@@ -1079,6 +1091,7 @@ async def _summarize_report_to_table(report_path: Path) -> str:
     return await loop.run_in_executor(None, client.report_to_table, report_text)
 
 
+# new: 新版本似乎把这部分删除了
 @app.get("/report/table")
 async def report_table():
     if agent is not None:
@@ -1114,33 +1127,6 @@ async def kb_manager_page():
         content="<h1>知识库管理页面未找到</h1><p>请创建 frontend/kb_manager.html</p>",
         status_code=404,
     )
-
-
-# new: 在聊天页面添加入口
-@app.get("/chat", response_class=HTMLResponse)
-async def chat_page():
-    """聊天页面（添加知识库入口）"""
-    chat_file = Path(__file__).parent.parent / "frontend" / "chat.html"
-    if not chat_file.exists():
-        return HTMLResponse(content="<h1>聊天页面未找到</h1>", status_code=404)
-
-    # 读取原始内容
-    content = chat_file.read_text(encoding="utf-8")
-
-    # 在聊天窗口上方插入知识库入口
-    injection_point = '<div class="chat-container">'  # 假设这是聊天容器的开始标签
-    if injection_point in content:
-        button_html = """
-        <div style="text-align:center;margin:15px 0">
-            <button onclick="window.location.href='/kb'" 
-                    style="background:#6366f1;color:white;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:500">
-                🧠 管理知识库
-            </button>
-        </div>
-        """
-        content = content.replace(injection_point, button_html + injection_point)
-
-    return HTMLResponse(content=content)
 
 
 if __name__ == "__main__":
