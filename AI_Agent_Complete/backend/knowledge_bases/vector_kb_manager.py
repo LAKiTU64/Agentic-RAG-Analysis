@@ -1,6 +1,7 @@
 import os
 
 import shutil
+import sys
 import uuid
 import hashlib
 from datetime import datetime, timedelta, timezone
@@ -12,11 +13,7 @@ from langchain_community.document_loaders import TextLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import torch
-
-
-# --- Config ---
-DEFAULT_SEARCH_K = 5
-MAX_DISTANCE_THRESHOLD = 0.5  # MAX_DISTANCE_THRESHOLD 越小，检索条件越严格
+import yaml
 
 # 北京时间
 BEIJING_TZ = timezone(timedelta(hours=8))
@@ -54,23 +51,24 @@ class VectorKBManager:
     支持 document_id (UUID4) 和 doc_hash (SHA256) 双标识。
     """
 
-    def __init__(
-        self,
-        persist_directory: str = "/workspaces/ai-agent/AI_Agent_Complete/.chroma_db",
-        embedding_model_path: str = "/workspaces/models/bge-small-zh-v1.5",
-    ) -> None:
-        self.persist_directory = persist_directory
-        self.embedding_model_path = embedding_model_path
+    def __init__(self, config: Dict) -> None:
+        kb_config = config.get("vector_store", {})
+        self.embedding_model_path = kb_config.get("embedding_model_path")
+        self.persist_directory = kb_config.get("persist_directory")
+        self.chunk_size = kb_config.get("chunk_size")
+        self.chunk_overlap = kb_config.get("chunk_overlap")
+        self.default_search_k = kb_config.get("default_search_k", 8)
+        self.max_distance = kb_config.get("max_distance", 0.5)
 
         # 检查本地模型路径
-        if not os.path.exists(embedding_model_path):
+        if not os.path.exists(self.embedding_model_path):
             raise FileNotFoundError(
-                f"❌ 找不到本地模型目录: {embedding_model_path}。请确保模型已下载到该位置。"
+                f"❌ 找不到本地模型目录: {self.embedding_model_path}。请确保模型已下载到该位置。"
             )
 
         # 初始化 Embedding：强制开启 local_files_only，禁止联网下载 embedding 模型；增加 CUDA 环境的支持
         self.embeddings = HuggingFaceEmbeddings(
-            model_name=embedding_model_path,
+            model_name=self.embedding_model_path,
             model_kwargs={
                 "device": "cuda" if torch.cuda.is_available() else "cpu",
                 "local_files_only": True,
@@ -248,8 +246,8 @@ class VectorKBManager:
     def search(
         self,
         query: str,
-        k: int = DEFAULT_SEARCH_K,
-        max_distance: float = MAX_DISTANCE_THRESHOLD,
+        k: int = None,
+        max_distance: float = None,
         *,
         where_filter: Optional[Dict[str, Any]] = None,
     ) -> List[Dict[str, Any]]:
@@ -273,6 +271,11 @@ class VectorKBManager:
         }
         """
         assert self.vectorstore is not None
+
+        if k is None:
+            k = self.default_search_k
+        if max_distance is None:
+            max_distance = self.max_distance
 
         # 执行检索
         docs_and_scores = self.vectorstore.similarity_search_with_score(
@@ -407,8 +410,8 @@ class VectorKBManager:
 
         class KBRetriever(BaseRetriever):
             _kb_manager: "VectorKBManager" = PrivateAttr()
-            k: int = DEFAULT_SEARCH_K
-            max_distance: float = MAX_DISTANCE_THRESHOLD
+            k: int = self.default_search_k
+            max_distance: float = self.max_distance
 
             def __init__(self, kb_manager, k, max_distance, **data):
                 super().__init__(**data)
@@ -448,33 +451,34 @@ class VectorKBManager:
                     for res in search_results
                 ]
 
-        k = kwargs.get("k", DEFAULT_SEARCH_K)
-        max_distance = kwargs.get("max_distance", MAX_DISTANCE_THRESHOLD)
+        k = kwargs.get("k", self.default_search_k)
+        max_distance = kwargs.get("max_distance", self.max_distance)
         return KBRetriever(kb_manager=self, k=k, max_distance=max_distance)
 
 
 if __name__ == "__main__":
-    # 1. 初始化（确保模型路径正确）
+    # 1. 初始化
     print("\nStep 1: 初始化向量库\n")
-    chroma_path = "workspaces/ai-agent/AI_Agent_Complete/.chroma_db"
-    embedding_model_path = "/workspaces/models/bge-small-zh-v1.5"
-    docs_dir = "workspaces/ai-agent/AI_Agent_Complete/documents"  # 测试文档目录
+    config_path = "/workspaces/ai-agent/AI_Agent_Complete/config.yaml"
+    if not os.path.exists(config_path):
+        print(f"❌ 错误: 找不到 {config_path}")
+        sys.exit(1)
 
-    kb = VectorKBManager(
-        persist_directory=chroma_path, embedding_model_path=embedding_model_path
-    )
+    with open(config_path, "r", encoding="utf-8") as f:
+        config_yaml = yaml.safe_load(f)
+
+    kb = VectorKBManager(config=config_yaml)
 
     # 2. 批量导入
     print("\nStep 2: 批量导入\n")
     # 模拟一个统一的 runtime_info（所有文档共享）
     mock_runtime_info = {
-        "model": "qwen2-7b",
-        "batch_size": 16,  # 改为 >8，方便后续过滤
+        "model": "qwen3-4b",
+        "batch_size": 16,
         "gpu": "H800",
-        "accuracy": 0.91,  # 新增字段，用于 filter 测试
         "input_len": 512,
     }
-
+    docs_dir = "/workspaces/ai-agent/AI_Agent_Complete/documents"
     for filename in os.listdir(docs_dir):
         full_path = os.path.join(docs_dir, filename)
         if os.path.isfile(full_path):
@@ -520,7 +524,7 @@ if __name__ == "__main__":
     retriever = kb.as_retrieriter(k=3, max_distance=0.6)
     docs = retriever.invoke(
         "性能瓶颈",
-        filter={"accuracy": {"$gt": 0.90}},  # 利用 runtime_info 中的 accuracy
+        filter={"input_len": {"$gt": 511}},  # 利用 runtime_info 中的 accuracy
     )
     print(f"Retriever 返回 {len(docs)} 个文档")
     for doc in docs:
