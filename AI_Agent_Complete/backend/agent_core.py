@@ -438,19 +438,26 @@ class AIAgent:
 
         if not model_name:
             return None
-        # 1. 如果 model_mappings 配置的是绝对路径，则直接返回该路径
+
+        # model_name在model_mappings映射表中
         if model_name in self.model_mappings:
             mapped_path = self.model_mappings[model_name]
+            # 如果配置的是绝对路径，则直接返回
             if Path(mapped_path).is_absolute():
                 return mapped_path
+            # 否则，返回相对路径
             return str(self.models_path / mapped_path)
 
-        # 2. 如果 model_mappings 配置的是相对路径，则与 models_path 拼接成绝对路径，若路径存在则返回，否则返回None
+        # model_name不在映射表
         if Path(model_name).exists():
+            # 尝试绝对路径
             return model_name
+        # 尝试相对路径
         potential_path = self.models_path / model_name
         if potential_path.exists():
             return str(potential_path)
+
+        # 解析失败
         return None
 
     async def _agent_analysis(self, message: str) -> str:
@@ -1270,32 +1277,6 @@ class AIAgent:
             return "\n".join(summary_lines)
         else:
             return "**📊 分析报告已生成，请查看详细文件**"
-
-    def _resolve_model_path(self, model_name: str) -> Optional[str]:
-        """解析模型路径"""
-
-        # 检查是否在映射表中
-        if model_name in self.model_mappings:
-            mapped_path = self.model_mappings[model_name]
-
-            # 如果是绝对路径，直接返回
-            if Path(mapped_path).is_absolute():
-                return mapped_path
-
-            # 否则，相对于 models_path
-            full_path = self.models_path / mapped_path
-            return str(full_path)
-
-        # 如果不在映射表中，尝试直接作为路径
-        if Path(model_name).exists():
-            return model_name
-
-        # 尝试相对于 models_path
-        potential_path = self.models_path / model_name
-        if potential_path.exists():
-            return str(potential_path)
-
-        return None
 
     # 改为LLM识别
     def _extract_model_name(self, prompt: str) -> Optional[str]:
