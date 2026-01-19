@@ -22,13 +22,13 @@ import argparse
 import re
 import math
 from pathlib import Path
-from typing import List, Dict, Tuple, Optional, Any
-from datetime import datetime, timezone
+from typing import List, Dict, Optional, Any
+from datetime import datetime
 
 # 导入我们的分析工具
 sys.path.append(str(Path(__file__).parent))
 from nsys_parser import NsysParser, NsysAnalyzer
-from ncu_parser import NCUParser, NCUAnalyzer, NCUVisualizer, NCUReporter
+from ncu_parser import NCUParser, NCUAnalyzer, NCUVisualizer
 try:
     from .roofline_estimator import compute_roofline  # type: ignore
 except Exception:
@@ -96,7 +96,7 @@ class NSysToNCUAnalyzer:
             '--force-overwrite=true'
             # '--capture-range=nvtx',
             # '--capture-range-end=stop',
-        ] + target_command 
+        ] + target_command
         
         print("🚀 步骤1: 运行nsys全局性能分析...")
         print(f"命令: {' '.join(nsys_cmd)}")
@@ -110,8 +110,8 @@ class NSysToNCUAnalyzer:
             print(f"❌ nsys分析失败: {e.stderr}")
             raise
     
-    def step2_extract_hot_kernels(self, nsys_file: str, 
-                                  top_k: int = 10, 
+    def step2_extract_hot_kernels(self, nsys_file: str,
+                                  top_k: int = 10,
                                   min_duration_ms: float = 0.1) -> List[Dict]:
         """第二步：解析 nsys 并生成 layer_kernels.csv（跳过热点提取，直接使用 NVTX 关联的 kernels）
         现在默认仅使用 Run[2] 的子集进行后续分析与报告。
@@ -132,7 +132,8 @@ class NSysToNCUAnalyzer:
                     print(f"📄 layer_kernels.csv 已存在于输出目录: {target_csv}")
                 else:
                     # 强制覆盖
-                    import shutil, os
+                    import shutil
+                    import os
                     if target_csv.exists():
                         os.remove(target_csv)
                     shutil.copy2(src, target_csv)
@@ -142,9 +143,9 @@ class NSysToNCUAnalyzer:
         else:
             print("⚠️ 未生成 layer_kernels.csv，请确认 NVTX_EVENTS/StringIds/CUPTI 表存在且有 Layer[...] 标签")
 
-        # 仅保留 Run[2] 的子集
-        run_tag = "#Run[2]"
-        run_csv = self.output_dir / "layer_kernels_run2.csv"
+        # 仅保留 Run[1] 的子集
+        run_tag = "#Run[1]"
+        run_csv = self.output_dir / "layer_kernels_run1.csv"
         try:
             import csv
             kept = 0
@@ -156,14 +157,15 @@ class NSysToNCUAnalyzer:
                     if run_tag in (r.get("layer") or ""):
                         w.writerow(r)
                         kept += 1
-            print(f"📄 已生成仅 Run[2] 的子集: {run_csv}（{kept} 行）")
+            print(f"📄 已生成仅 Run[1] 的子集: {run_csv}（{kept} 行）")
         except Exception as e:
             print(f"⚠️ 生成 Run[2] 子集失败: {e}")
 
-        # 用 Run[2] 子集生成精简 JSON（仅 name、dur_ms），并以此作为后续唯一数据源
+        # 用 Run[1] 子集生成精简 JSON（仅 name、dur_ms），并以此作为后续唯一数据源
         rows_run2 = []
         try:
-            import csv, json
+            import csv
+            import json
             with open(run_csv, newline='', encoding='utf-8') as f:
                 rdr = csv.DictReader(f)
                 for r in rdr:
@@ -171,14 +173,14 @@ class NSysToNCUAnalyzer:
                         'name': r.get('kernel_name',''),
                         'dur_ms': float(r.get('dur_ms', 0.0) or 0.0)
                     })
-            hot_json_path = self.output_dir / "layer_kernels_run2_hot.json"
+            hot_json_path = self.output_dir / "layer_kernels_run1_hot.json"
             hot_json_path.write_text(json.dumps(rows_run2, ensure_ascii=False, indent=2), encoding='utf-8')
             print(f"📄 已生成精简热点文件(顺序保留，不去重): {hot_json_path}")
         except Exception as e:
             print(f"⚠️ 读取 Run[2] 子集失败: {e}")
             rows_run2 = []
 
-        # 用 Run[2] JSON 更新 nsys 概览（total_time 为 dur_ms 求和，不统计 count/max）
+        # 用 Run[1] JSON 更新 nsys 概览（total_time 为 dur_ms 求和，不统计 count/max）
         total_time_ms = sum(item.get('dur_ms', 0.0) for item in rows_run2)
         total_kernels = len(rows_run2)
         avg_time_ms = (total_time_ms / total_kernels) if total_kernels else 0.0
@@ -191,21 +193,21 @@ class NSysToNCUAnalyzer:
                 'avg_kernel_time': avg_time_ms,
             },
             'layer_kernels_rows': rows_run2,           # 用精简结构替代
-            'layer_kernels_source': str(hot_json_path) # 指向 run2_hot.json
+            'layer_kernels_source': str(hot_json_path) # 指向 run1_hot.json
         }
 
         # 记录关键 NVTX 范围的起止与时长，便于报告引用
-        nvtx_tag = "Layer[0]#Run[2]"
+        nvtx_tag = "Layer[0]#Run[1]"
         nvtx_span = self._query_nvtx_range(parser.sqlite_file, nvtx_tag)
         if nvtx_span:
             self.nsys_stats.setdefault('nvtx_ranges', {})[nvtx_tag] = nvtx_span
 
-        # 将“热点”列表设置为 run2_hot.json 的顺序列表（不去重、不排序）
+        # 将“热点”列表设置为 run1_hot.json 的顺序列表（不去重、不排序）
         self.hot_kernels = rows_run2[:]
-        print(f"ℹ️ 已按要求使用 Run[2] JSON（{len(self.hot_kernels)} 条），顺序保留且不去重。")
+        print(f"ℹ️ 已按要求使用 Run[1] JSON（{len(self.hot_kernels)} 条），顺序保留且不去重。")
         return self.hot_kernels
     
-    def step3_ncu_targeted_analysis(self, target_command: List[str], 
+    def step3_ncu_targeted_analysis(self, target_command: List[str],
                                    kernels_to_analyze: List[Dict],
                                    max_kernels: Optional[int] = None) -> List[str]:
         """第三步：使用ncu对热点kernels进行深度分析
@@ -459,6 +461,7 @@ class NSysToNCUAnalyzer:
             'ncu_focus_analysis': focus_metrics or {},
             'roofline_estimate': self.roofline_estimate,
         }
+        observed_summaries: List[Dict[str, Any]] = []
         
         # 分析每个ncu结果
         # 若提供焦点聚合指标，则不必对全量 ncu_full_capture_global 逐文件做标准分析（仍可保留 targeted 文件分析）
@@ -471,7 +474,12 @@ class NSysToNCUAnalyzer:
                     parser = NCUParser(csv_file)
                     parser.parse()
                     
-                    analyzer = NCUAnalyzer(parser)
+                    hardware_hint = None
+                    precision_hint: Optional[Dict[str, Any]] = None
+                    if isinstance(self.roofline_estimate, dict):
+                        hardware_hint = self.roofline_estimate.get('hardware')
+                        precision_hint = self.roofline_estimate.get('precision_bits')  # type: ignore
+                    analyzer = NCUAnalyzer(parser, hardware=hardware_hint, precision_bits=precision_hint)
                     stats = analyzer.analyze()
                     
                     kernel_name = Path(ncu_file).stem
@@ -489,6 +497,9 @@ class NSysToNCUAnalyzer:
                             for b in analyzer.bottlenecks[:3]  # 只取前3个
                         ]
                     }
+                    observed = stats.get('roofline_observed')
+                    if isinstance(observed, dict):
+                        observed_summaries.append(observed)
                     
                     # 生成详细的可视化报告
                     visualizer = NCUVisualizer(parser, analyzer)
@@ -502,6 +513,17 @@ class NSysToNCUAnalyzer:
         
         # 保存综合分析结果
         results_file = self.output_dir / "comprehensive_analysis.json"
+        combined_observed = self._combine_observed_roofline(observed_summaries)
+        if combined_observed:
+            comprehensive_results['roofline_observed'] = combined_observed
+            if isinstance(self.roofline_estimate, dict):
+                merged = dict(self.roofline_estimate)
+                merged['observed'] = combined_observed
+                merged['comparison'] = self._compare_roofline_predictions(merged, combined_observed)
+                self.roofline_estimate = merged
+                comprehensive_results['roofline_estimate'] = merged
+                self._persist_roofline_estimate(merged)
+
         with open(results_file, 'w', encoding='utf-8') as f:
             json.dump(comprehensive_results, f, indent=2, ensure_ascii=False, default=str)
         
@@ -523,24 +545,40 @@ class NSysToNCUAnalyzer:
                         return "∞"
                     return f"{seconds * 1000:.3f} ms"
 
-                def fmt_perf(value: float) -> str:
+                def fmt_perf(value: Optional[float]) -> str:
+                    if not isinstance(value, (int, float)):
+                        return "N/A"
                     return f"{value / 1e12:.2f} TOPS"
 
-                def fmt_mem(value: float) -> str:
+                def fmt_mem(value: Optional[float]) -> str:
+                    if not isinstance(value, (int, float)):
+                        return "N/A"
                     return f"{value / 1e9:.2f} GB"
 
-                def fmt_ops(value: float) -> str:
+                def fmt_ops(value: Optional[float]) -> str:
+                    if not isinstance(value, (int, float)):
+                        return "N/A"
                     return f"{value / 1e12:.2f} TOPs"
 
-                def fmt_ai(value: float) -> str:
+                def fmt_ai(value: Optional[float]) -> str:
+                    if not isinstance(value, (int, float)):
+                        return "N/A"
                     return f"{value:.2f} OPs/Byte"
+
+                def fmt_ratio(value: Optional[float]) -> str:
+                    if not isinstance(value, (int, float)):
+                        return "N/A"
+                    return f"{value * 100:.1f}%"
 
                 bits = roofline.get('precision_bits', {})
                 params = roofline.get('params', {})
                 prefill_r = roofline.get('prefill', {})
                 decode_r = roofline.get('decode', {})
                 overall_r = roofline.get('overall', {})
-                f.write("一、Roofline 预测指标\n")
+                observed_r = comprehensive_results.get('roofline_observed') or roofline.get('observed', {})
+                comparison = roofline.get('comparison', {}) if isinstance(roofline.get('comparison'), dict) else {}
+
+                f.write("一、Roofline 预测与实测指标\n")
                 f.write(f" 硬件: {roofline.get('hardware', 'unknown')}\n")
                 f.write(
                     f" 精度: W{bits.get('w', 'N/A')} / A{bits.get('a', 'N/A')} / KV{bits.get('kv', 'N/A')}\n"
@@ -568,6 +606,34 @@ class NSysToNCUAnalyzer:
                     f"预计总时长 {fmt_time(overall_r.get('inference_time'))}, "
                     f"总体OPs {fmt_ops(overall_r.get('total_ops', 0.0))}\n\n"
                 )
+                if observed_r:
+                    avg_sm = observed_r.get('avg_sm_efficiency')
+                    avg_sm_str = f"{avg_sm:.1f}%" if isinstance(avg_sm, (int, float)) else "N/A"
+                    mem_gbps = observed_r.get('observed_memory_throughput_gbps')
+                    mem_str = f"{mem_gbps:.1f} GB/s" if isinstance(mem_gbps, (int, float)) else "N/A"
+                    ai_val = observed_r.get('observed_arithmetic_intensity')
+                    compute_val = observed_r.get('observed_compute_flops')
+                    f.write(
+                        f" 实测均值: SM效率 {avg_sm_str}, "
+                        f"内存带宽 {mem_str}, "
+                        f"算术强度 {fmt_ai(ai_val)}, "
+                        f"计算吞吐 {fmt_perf(compute_val)}, "
+                        f"推断受限 {observed_r.get('inferred_bound', 'N/A')}\n"
+                    )
+                    util_c = observed_r.get('compute_utilization')
+                    util_m = observed_r.get('memory_utilization')
+                    if isinstance(util_c, (int, float)) or isinstance(util_m, (int, float)):
+                        f.write(
+                            f" 利用率: 计算 {fmt_ratio(util_c)}, 内存 {fmt_ratio(util_m)}\n"
+                        )
+                    if comparison:
+                        f.write(
+                            f" 差异: 性能差 {fmt_ratio(comparison.get('performance_gap_ratio'))}, "
+                            f"强度差 {fmt_ratio(comparison.get('arithmetic_intensity_gap_ratio'))}, "
+                            f"边界判断 {comparison.get('bound_alignment', 'N/A')}\n\n"
+                        )
+                    else:
+                        f.write("\n")
             # nsys概览（优先展示 layer_kernels）
             f.write("二、Nsys 全局性能概览\n")
             nsys_overview = comprehensive_results.get('nsys_overview', {})
@@ -688,13 +754,143 @@ class NSysToNCUAnalyzer:
         print(f"📄 最终报告已生成: {report_file}")
         return str(report_file)
 
+    @staticmethod
+    def _combine_observed_roofline(observed_list: List[Dict[str, Any]]) -> Optional[Dict[str, Any]]:
+        valid = [obs for obs in observed_list if isinstance(obs, dict)]
+        if not valid:
+            return None
+
+        def _weight(entry: Dict[str, Any]) -> float:
+            weight = entry.get('duration_weight')
+            if isinstance(weight, (int, float)) and weight > 0:
+                return float(weight)
+            kernel_cnt = entry.get('kernel_count')
+            if isinstance(kernel_cnt, (int, float)) and kernel_cnt > 0:
+                return float(kernel_cnt)
+            return 1.0
+
+        total_weight = sum(_weight(entry) for entry in valid)
+        if total_weight <= 0:
+            total_weight = float(len(valid))
+
+        def _weighted_average(key: str) -> Optional[float]:
+            total = 0.0
+            weight_sum = 0.0
+            for entry in valid:
+                value = entry.get(key)
+                if not isinstance(value, (int, float)):
+                    continue
+                weight = _weight(entry)
+                if weight <= 0:
+                    continue
+                total += float(value) * weight
+                weight_sum += weight
+            return total / weight_sum if weight_sum > 0 else None
+
+        observed_compute = _weighted_average('observed_compute_flops')
+        observed_memory_bytes = _weighted_average('observed_memory_throughput_bytes')
+
+        arithmetic_intensity = None
+        if observed_compute is not None and observed_memory_bytes:
+            if observed_memory_bytes > 0:
+                arithmetic_intensity = observed_compute / observed_memory_bytes
+
+        bound = None
+        for entry in valid:
+            cand = entry.get('inferred_bound')
+            if cand:
+                bound = cand
+                break
+
+        aggregate = {
+            'hardware': valid[0].get('hardware'),
+            'precision_bits': valid[0].get('precision_bits'),
+            'sources': len(valid),
+            'kernel_count': sum(entry.get('kernel_count', 0) or 0 for entry in valid),
+            'aggregated_duration_weight': total_weight,
+            'total_duration_us': sum(entry.get('total_duration_us', 0) or 0 for entry in valid),
+            'total_duration_ms': sum(entry.get('total_duration_ms', 0) or 0 for entry in valid),
+            'avg_sm_efficiency': _weighted_average('avg_sm_efficiency'),
+            'avg_dram_throughput_gbps': _weighted_average('avg_dram_throughput_gbps'),
+            'observed_compute_flops': observed_compute,
+            'observed_compute_tops': (observed_compute / 1e12) if observed_compute is not None else None,
+            'observed_memory_throughput_bytes': observed_memory_bytes,
+            'observed_memory_throughput_gbps': _weighted_average('observed_memory_throughput_gbps'),
+            'observed_arithmetic_intensity': arithmetic_intensity,
+            'compute_utilization': _weighted_average('compute_utilization'),
+            'memory_utilization': _weighted_average('memory_utilization'),
+            'peak_compute_flops': valid[0].get('peak_compute_flops'),
+            'peak_memory_bandwidth': valid[0].get('peak_memory_bandwidth'),
+            'turning_point_intensity': valid[0].get('turning_point_intensity'),
+            'inferred_bound': bound,
+        }
+        return aggregate
+
+    @staticmethod
+    def _compare_roofline_predictions(predicted: Dict[str, Any], observed: Dict[str, Any]) -> Dict[str, Any]:
+        overall = predicted.get('overall', {}) if isinstance(predicted, dict) else {}
+        peak_compute = observed.get('peak_compute_flops') or predicted.get('prefill', {}).get('max_ops')
+        pred_perf = overall.get('performance') if isinstance(overall, dict) else None
+        obs_perf = observed.get('observed_compute_flops')
+        perf_gap_ratio = None
+        if isinstance(pred_perf, (int, float)) and isinstance(obs_perf, (int, float)) and pred_perf > 0:
+            perf_gap_ratio = (obs_perf - pred_perf) / pred_perf
+
+        pred_ai = overall.get('arithmetic_intensity') if isinstance(overall, dict) else None
+        obs_ai = observed.get('observed_arithmetic_intensity')
+        ai_gap_ratio = None
+        if isinstance(pred_ai, (int, float)) and isinstance(obs_ai, (int, float)) and pred_ai != 0:
+            ai_gap_ratio = (obs_ai - pred_ai) / pred_ai
+
+        pred_bound = overall.get('bound') if isinstance(overall, dict) else None
+        obs_bound = observed.get('inferred_bound')
+        bound_alignment = None
+        if pred_bound and obs_bound:
+            bound_alignment = 'match' if pred_bound == obs_bound else 'diverge'
+
+        memory_peak = observed.get('peak_memory_bandwidth')
+        pred_memory = None
+        if isinstance(pred_perf, (int, float)) and isinstance(pred_ai, (int, float)) and pred_ai > 0:
+            pred_memory = pred_perf / pred_ai
+        obs_memory = observed.get('observed_memory_throughput_bytes')
+        memory_gap_ratio = None
+        if isinstance(pred_memory, (int, float)) and isinstance(obs_memory, (int, float)) and pred_memory > 0:
+            memory_gap_ratio = (obs_memory - pred_memory) / pred_memory
+
+        return {
+            'predicted_performance': pred_perf,
+            'observed_performance': obs_perf,
+            'performance_gap_ratio': perf_gap_ratio,
+            'predicted_arithmetic_intensity': pred_ai,
+            'observed_arithmetic_intensity': obs_ai,
+            'arithmetic_intensity_gap_ratio': ai_gap_ratio,
+            'predicted_bound': pred_bound,
+            'observed_bound': obs_bound,
+            'bound_alignment': bound_alignment,
+            'observed_compute_utilization': observed.get('compute_utilization'),
+            'observed_memory_utilization': observed.get('memory_utilization'),
+            'peak_compute_flops': peak_compute,
+            'peak_memory_bandwidth': memory_peak,
+            'predicted_memory_bytes': pred_memory,
+            'observed_memory_bytes': obs_memory,
+            'memory_gap_ratio': memory_gap_ratio,
+        }
+
+    def _persist_roofline_estimate(self, data: Dict[str, Any]) -> None:
+        try:
+            output_path = self.output_dir / "roofline_estimate.json"
+            with open(output_path, 'w', encoding='utf-8') as rf:
+                json.dump(data, rf, ensure_ascii=False, indent=2, default=str)
+        except Exception as exc:
+            print(f"⚠️ Roofline 结果写入失败: {exc}")
+
 def create_sglang_analysis_workflow():
     """创建SGlang专用的分析工作流"""
     DEFAULT_MODEL_DIR = os.getenv('SGLANG_MODEL_PATH') or os.getenv('MODEL_PATH') or '/workspace/models/'
 
-    def run_sglang_integrated_analysis(model_path: Optional[str] = None, 
+    def run_sglang_integrated_analysis(model_path: Optional[str] = None,
                                       batch_size: int = 1,
-                                      input_len: int = 128, 
+                                      input_len: int = 128,
                                       output_len: int = 1,
                                       disable_chunked_prefill: bool = True,
                                       gpu_ids: Optional[List[str]] = None,
@@ -703,7 +899,6 @@ def create_sglang_analysis_workflow():
                                       a_bit: int = 16,
                                       kv_bit: Optional[int] = None,
                                       use_flashattention: bool = False):
-        print(f"[DEBUG] run_sglang_integrated_analysis entered: bs={batch_size}, in={input_len}, out={output_len}")
         """运行SGlang的集成分析（固定设置：bs=1, in=128, out=1），可在多个GPU上顺序执行"""
         if not model_path:
             model_path = DEFAULT_MODEL_DIR.rstrip('/')
@@ -760,7 +955,7 @@ def create_sglang_analysis_workflow():
             nsys_file = analyzer.step1_nsys_analysis(sglang_cmd, "sglang_overview")
             hot = analyzer.step2_extract_hot_kernels(nsys_file, top_k=8)
             if not hot:
-                print("❌ 未发现热点kernels，分析终止");
+                print("❌ 未发现热点kernels，分析终止")
                 continue
             ncu_files = analyzer.step3_ncu_targeted_analysis(sglang_cmd, hot, max_kernels=len(hot))
             results = analyzer.step4_comprehensive_analysis(ncu_files)
@@ -801,7 +996,7 @@ def _extract_advanced_json(md_text: str) -> Dict[str, Any]:  # type: ignore
     }
 
 def main():
-    import argparse, os
+    import os
     parser = argparse.ArgumentParser(description='集成 nsys 和 ncu 的性能分析工具')
     # SGlang 参数
     parser.add_argument('--sglang-model', type=str, default=os.getenv('SGLANG_MODEL_PATH') or os.getenv('MODEL_PATH'),
@@ -817,7 +1012,6 @@ def main():
 
     try:
         run_workflow = create_sglang_analysis_workflow()
-        print("[DEBUG] 调用 create_sglang_analysis_workflow()")
         run_workflow(
             model_path=known_args.sglang_model,
             batch_size=known_args.sglang_batch,

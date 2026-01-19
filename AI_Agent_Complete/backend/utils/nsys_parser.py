@@ -5,7 +5,6 @@ NVIDIA Nsight Systems (nsys) 输出文件自动化解析工具
 from pathlib import Path
 from typing import Dict, List, Optional, Union, Tuple
 from dataclasses import dataclass
-from datetime import datetime
 
 import sqlite3
 import csv
@@ -170,131 +169,31 @@ class NsysParser:
         cur = conn.cursor()
         cur.execute(f"PRAGMA table_info({ktable});")
         cols = {row[1] for row in cur.fetchall()}
-
-        def _find_col(candidates: Tuple[str, ...], available: set) -> Optional[str]:
-            lower_map = {c.lower(): c for c in available}
-            for cand in candidates:
-                if cand in available:
-                    return cand
-                if cand.lower() in lower_map:
-                    return lower_map[cand.lower()]
-            return None
-
-        start_col = _find_col(("start",), cols)
-        end_col = _find_col(("end",), cols)
-        if not (start_col and end_col):
+        # 统一依赖 start/end
+        if not {'start', 'end'}.issubset(cols):
             print("⚠ layer_kernels 查询失败: CUPTI kernel 表不含 end/start 列")
             return []
-        name_col = _find_col(("demangledName", "name"), cols)
+        name_col = 'demangledName' if 'demangledName' in cols else ('name' if 'name' in cols else None)
         if not name_col:
             print("⚠ layer_kernels 查询失败: 缺少名称列")
             return []
 
-        runtime_tables = [t for t in self.tables if t.upper().startswith('CUPTI_ACTIVITY_KIND_RUNTIME')]
-        runtime_table = runtime_tables[0] if runtime_tables else None
-
-        nvtx_cur = conn.cursor()
-        nvtx_cur.execute("PRAGMA table_info(NVTX_EVENTS);")
-        nvtx_cols = {row[1] for row in nvtx_cur.fetchall()}
-
-        corr_col = _find_col(("correlationId", "correlation_id"), cols)
-        nvtx_corr_col = _find_col(("correlationId", "correlation_id"), nvtx_cols)
-
-        def _nvtx_layer_expr(alias: str = "n") -> Tuple[str, str]:
-            text_id_col = _find_col(("textId", "text_id"), nvtx_cols)
-            text_col = _find_col(("text",), nvtx_cols)
-            if text_id_col:
-                if text_col:
-                    return (f"LEFT JOIN StringIds s ON {alias}.{text_id_col} = s.id", f"COALESCE({alias}.{text_col}, s.value)")
-                return (f"LEFT JOIN StringIds s ON {alias}.{text_id_col} = s.id", "s.value")
-            if text_col:
-                return ("", f"{alias}.{text_col}")
-            return ("", "'Unknown Layer'")
-
-        runtime_corr_col = None
-        runtime_start_col = None
-        runtime_end_col = None
-        runtime_tid_col = None
-        if runtime_table:
-            rt_cur = conn.cursor()
-            rt_cur.execute(f"PRAGMA table_info({runtime_table});")
-            rt_cols = {row[1] for row in rt_cur.fetchall()}
-            runtime_corr_col = _find_col(("correlationId", "correlation_id"), rt_cols)
-            runtime_start_col = _find_col(("start",), rt_cols)
-            runtime_end_col = _find_col(("end",), rt_cols)
-            runtime_tid_col = _find_col(("globalTid", "global_tid", "globalThreadId"), rt_cols)
-
-        nvtx_start_col = _find_col(("start",), nvtx_cols)
-        nvtx_end_col = _find_col(("end",), nvtx_cols)
-        nvtx_tid_col = _find_col(("globalTid", "global_tid", "globalThreadId"), nvtx_cols)
-
-        use_four_join = all([runtime_table, corr_col, runtime_corr_col, runtime_start_col, runtime_end_col, runtime_tid_col, nvtx_start_col, nvtx_end_col, nvtx_tid_col])
-
-        if use_four_join:
-            print("🔗 NVTX→Runtime 用时间+globalTid 对齐，再用 correlationId 关联 Kernel")
-            text_join, text_expr = _nvtx_layer_expr("n")
-            sql = f"""
-            WITH nvtx AS (
-              SELECT n.{nvtx_start_col} AS nstart, n.{nvtx_end_col} AS nend, n.{nvtx_tid_col} AS ngtid, {text_expr} AS layer
-              FROM NVTX_EVENTS n
-              {text_join}
-              WHERE n.{nvtx_start_col} IS NOT NULL AND n.{nvtx_end_col} IS NOT NULL AND n.{nvtx_tid_col} IS NOT NULL
-            ),
-            rt AS (
-              SELECT r.{runtime_corr_col} AS rcid, r.{runtime_start_col} AS rstart, r.{runtime_end_col} AS rend, r.{runtime_tid_col} AS rgtid
-              FROM {runtime_table} r
-              WHERE r.{runtime_corr_col} IS NOT NULL AND r.{runtime_start_col} IS NOT NULL AND r.{runtime_end_col} IS NOT NULL AND r.{runtime_tid_col} IS NOT NULL
-            )
-            SELECT
-              nvtx.layer AS layer,
-              COALESCE(si.value, CAST(k.{name_col} AS TEXT)) AS kernel_name,
-              ROUND(((k.{end_col} - k.{start_col}))/1e6, 3) AS dur_ms
-            FROM rt
-            JOIN nvtx ON rt.rgtid = nvtx.ngtid AND rt.rstart >= nvtx.nstart AND rt.rend <= nvtx.nend
-            JOIN {ktable} k ON k.{corr_col} = rt.rcid
-            LEFT JOIN StringIds si ON k.{name_col} = si.id
-            ORDER BY k.{start_col};
-            """
-        elif corr_col and nvtx_corr_col:
-            print("🔗 使用 correlationId 三表关联 NVTX + StringIds + CUPTI kernel")
-            text_join, text_expr = _nvtx_layer_expr("n")
-            sql = f"""
-            WITH nvtx AS (
-              SELECT n.{nvtx_corr_col} AS cid, {text_expr} AS layer
-              FROM NVTX_EVENTS n
-              {text_join}
-              WHERE n.{nvtx_corr_col} IS NOT NULL
-            )
-            SELECT
-              nvtx.layer AS layer,
-              COALESCE(si.value, CAST(k.{name_col} AS TEXT)) AS kernel_name,
-              ROUND(((k.{end_col} - k.{start_col}))/1e6, 3) AS dur_ms
-            FROM {ktable} k
-            JOIN nvtx ON k.{corr_col} = nvtx.cid
-            LEFT JOIN StringIds si ON k.{name_col} = si.id
-            ORDER BY k.{start_col};
-            """
-        else:
-            print("🔗 使用时间范围关联 NVTX_EVENTS 与 CUPTI kernels（fallback）")
-            nvtx_start_col = nvtx_start_col or "start"
-            nvtx_end_col = nvtx_end_col or "end"
-            text_join, text_expr = _nvtx_layer_expr("n")
-            sql = f"""
-            WITH nvtx AS (
-              SELECT n.{nvtx_start_col} AS nstart, n.{nvtx_end_col} AS nend, {text_expr} AS layer
-              FROM NVTX_EVENTS n
-              {text_join}
-              WHERE n.{nvtx_start_col} IS NOT NULL AND n.{nvtx_end_col} IS NOT NULL
-            )
-            SELECT
-              nvtx.layer AS layer,
-              COALESCE(si.value, CAST(k.{name_col} AS TEXT)) AS kernel_name,
-              ROUND(((k.{end_col} - k.{start_col}))/1e6, 3) AS dur_ms
-            FROM {ktable} k
-            LEFT JOIN StringIds si ON k.{name_col} = si.id
-            JOIN nvtx ON k.{start_col} >= nvtx.nstart AND k.{end_col} <= nvtx.nend
-            ORDER BY k.{start_col};
-            """
+        sql = f"""
+        WITH nvtx AS (
+          SELECT n.start AS nstart, n.end AS nend, COALESCE(n.text, s.value) AS layer
+          FROM NVTX_EVENTS n
+          LEFT JOIN StringIds s ON n.textId = s.id
+          WHERE n.eventType = 59 AND (COALESCE(n.text, s.value) LIKE 'Layer[%')
+        )
+        SELECT
+          nvtx.layer AS layer,
+          si.value AS kernel_name,
+          ROUND(((k.end - k.start))/1e6, 3) AS dur_ms
+        FROM {ktable} k
+        LEFT JOIN StringIds si ON k.{name_col} = si.id
+        JOIN nvtx ON k.start >= nvtx.nstart AND k.end <= nvtx.nend
+        ORDER BY k.start;
+        """
         rows: List[Dict[str, Union[str, float]]] = []
         try:
             for layer, kname, dur_ms in cur.execute(sql):

@@ -19,22 +19,27 @@ NVIDIA Nsight Compute (ncu) 输出文件自动化解析工具
 版本: 1.0
 """
 
-import os
 import sys
 import json
-import csv
-from io import StringIO
 import subprocess
 import argparse
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
 from pathlib import Path
-from typing import Dict, List, Optional, Union, Tuple, Any
+from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass
 from datetime import datetime
 import warnings
+import math
 warnings.filterwarnings('ignore')
+
+try:
+    from .roofline_estimator import resolve_hardware_characteristics  # type: ignore
+except Exception:  # pragma: no cover
+    try:
+        from backend.utils.roofline_estimator import resolve_hardware_characteristics  # type: ignore
+    except Exception:
+        resolve_hardware_characteristics = None  # type: ignore
 
 # 设置matplotlib中文字体
 plt.rcParams['font.sans-serif'] = ['SimHei', 'DejaVu Sans']
@@ -76,7 +81,7 @@ class KernelMetrics:
     registers_per_thread: Optional[int] = None
     shared_memory_per_block: Optional[int] = None
     
-@dataclass 
+@dataclass
 class BottleneckInfo:
     """性能瓶颈信息"""
     type: str  # 瓶颈类型: memory, compute, latency
@@ -158,7 +163,7 @@ class NCUParser:
         
         cmd = [
             'ncu', '--json',
-            '--log-file', str(json_file), 
+            '--log-file', str(json_file),
             '--import', str(self.input_file)
         ]
         
@@ -391,7 +396,7 @@ class NCUParser:
         field_mapping = {
             'smEfficiency': 'sm_efficiency',
             'achievedOccupancy': 'achieved_occupancy',
-            'theoreticalOccupancy': 'theoretical_occupancy', 
+            'theoreticalOccupancy': 'theoretical_occupancy',
             'dramBandwidth': 'dram_bandwidth',
             'l2HitRate': 'l2_hit_rate',
             'l1HitRate': 'l1_hit_rate',
@@ -410,10 +415,13 @@ class NCUParser:
 class NCUAnalyzer:
     """NCU 数据分析器"""
     
-    def __init__(self, parser: NCUParser):
+    def __init__(self, parser: NCUParser, hardware: Optional[str] = None, precision_bits: Optional[Dict[str, int]] = None):
         self.parser = parser
+        self.hardware = hardware
+        self.precision_bits = precision_bits or {}
         self.stats = {}
         self.bottlenecks: List[BottleneckInfo] = []
+        self._observed_roofline: Optional[Dict[str, Any]] = None
     
     def analyze(self) -> Dict:
         """执行完整分析"""
@@ -421,12 +429,15 @@ class NCUAnalyzer:
         
         self.stats = {
             'gpu_utilization': self._analyze_gpu_utilization(),
-            'memory_analysis': self._analyze_memory_performance(), 
+            'memory_analysis': self._analyze_memory_performance(),
             'compute_analysis': self._analyze_compute_performance(),
             'warp_analysis': self._analyze_warp_efficiency(),
             'occupancy_analysis': self._analyze_occupancy(),
             'bottleneck_analysis': self._identify_bottlenecks()
         }
+        observed = self._compute_roofline_observed()
+        if observed:
+            self.stats['roofline_observed'] = observed
         
         return self.stats
     
@@ -571,7 +582,7 @@ class NCUAnalyzer:
             # 检查缓存命中率
             if kernel.l2_hit_rate is not None and kernel.l2_hit_rate < 70:
                 kernel_bottlenecks.append(BottleneckInfo(
-                    type="memory", 
+                    type="memory",
                     severity="medium",
                     description=f"L2缓存命中率低 ({kernel.l2_hit_rate:.1f}%)",
                     metrics={"l2_hit_rate": kernel.l2_hit_rate},
@@ -579,7 +590,7 @@ class NCUAnalyzer:
                 ))
             
             # 检查占用率
-            if (kernel.achieved_occupancy is not None and 
+            if (kernel.achieved_occupancy is not None and
                 kernel.theoretical_occupancy is not None and
                 kernel.theoretical_occupancy > 0):
                 
@@ -625,12 +636,112 @@ class NCUAnalyzer:
                 'severity': b.severity,
                 'recommendations': b.recommendations[:2]  # 只显示前2个建议
             }
-            for b in sorted(self.bottlenecks, 
+            for b in sorted(self.bottlenecks,
                           key=lambda x: {'critical': 4, 'high': 3, 'medium': 2, 'low': 1}.get(x.severity, 0),
                           reverse=True)[:5]
         ]
         
         return bottleneck_stats
+
+    def _compute_roofline_observed(self) -> Optional[Dict[str, Any]]:
+        """推算基于NCU观测的Roofline关键指标"""
+        if not self.hardware or resolve_hardware_characteristics is None:
+            return None
+        if not self.parser.kernels:
+            return None
+
+        try:
+            hw = resolve_hardware_characteristics(self.hardware, self.precision_bits)
+        except Exception as exc:
+            print(f"⚠️ 无法解析硬件峰值信息: {exc}")
+            return None
+
+        samples: List[Tuple[KernelMetrics, float]] = []
+        for kernel in self.parser.kernels:
+            has_compute = kernel.sm_efficiency is not None
+            has_memory = kernel.dram_bandwidth is not None
+            if not has_compute and not has_memory:
+                continue
+            duration = getattr(kernel, 'duration', None)
+            weight = float(duration) if isinstance(duration, (int, float)) and duration > 0 else 1.0
+            samples.append((kernel, weight))
+
+        if not samples:
+            return None
+
+        def _weighted_average(selector) -> Tuple[Optional[float], float]:
+            total = 0.0
+            weight_sum = 0.0
+            for kernel, weight in samples:
+                value = selector(kernel)
+                if value is None:
+                    continue
+                total += float(value) * weight
+                weight_sum += weight
+            return (total / weight_sum) if weight_sum > 0 else None, weight_sum
+
+        avg_sm_eff, sm_weight = _weighted_average(lambda k: k.sm_efficiency)
+        avg_dram_throughput, mem_weight = _weighted_average(lambda k: k.dram_bandwidth)
+
+        bandwidth_peak = float(hw.get('bandwidth', 0.0))
+        peak_compute = float(hw.get('selected_peak_compute', hw.get('FP16', 0.0)))
+        turning_point = float(hw.get('turning_point_intensity', float('inf')))
+        observed_compute = None if avg_sm_eff is None else peak_compute * max(avg_sm_eff, 0.0) / 100.0
+        observed_memory_bytes = None if avg_dram_throughput is None else max(avg_dram_throughput, 0.0) * 1e9
+        observed_ai = None
+        if observed_compute is not None and observed_memory_bytes:
+            if observed_memory_bytes > 0:
+                observed_ai = observed_compute / observed_memory_bytes
+
+        memory_util = None
+        if bandwidth_peak > 0 and observed_memory_bytes:
+            memory_util = observed_memory_bytes / bandwidth_peak
+        compute_util = None
+        if peak_compute > 0 and observed_compute is not None:
+            compute_util = observed_compute / peak_compute
+        if isinstance(memory_util, (int, float)):
+            memory_util = max(0.0, min(memory_util, 1.0))
+        if isinstance(compute_util, (int, float)):
+            compute_util = max(0.0, min(compute_util, 1.0))
+
+        inferred_bound = None
+        if observed_ai is not None and math.isfinite(turning_point):
+            if observed_ai < turning_point * 0.9:
+                inferred_bound = 'memory'
+            elif observed_ai > turning_point * 1.1:
+                inferred_bound = 'compute'
+            else:
+                inferred_bound = 'balanced'
+
+        total_duration_us = sum(
+            float(kernel.duration) for kernel, _ in samples
+            if isinstance(kernel.duration, (int, float)) and kernel.duration > 0
+        )
+        total_duration_ms = total_duration_us / 1000.0 if total_duration_us else None
+
+        summary = {
+            'hardware': self.hardware,
+            'precision_bits': self.precision_bits,
+            'kernel_count': len(samples),
+            'duration_weight': sum(weight for _, weight in samples),
+            'total_duration_us': total_duration_us,
+            'total_duration_ms': total_duration_ms,
+            'avg_sm_efficiency': avg_sm_eff,
+            'avg_dram_throughput_gbps': avg_dram_throughput,
+            'observed_compute_flops': observed_compute,
+            'observed_compute_tops': (observed_compute / 1e12) if observed_compute is not None else None,
+            'observed_memory_throughput_bytes': observed_memory_bytes,
+            'observed_memory_throughput_gbps': avg_dram_throughput,
+            'observed_arithmetic_intensity': observed_ai,
+            'compute_utilization': compute_util,
+            'memory_utilization': memory_util,
+            'peak_compute_flops': peak_compute,
+            'peak_memory_bandwidth': bandwidth_peak,
+            'turning_point_intensity': turning_point,
+            'inferred_bound': inferred_bound,
+        }
+        self._observed_roofline = summary
+        return summary
 
 class NCUVisualizer:
     """NCU 数据可视化"""
@@ -656,7 +767,7 @@ class NCUVisualizer:
     
     def _plot_gpu_utilization(self) -> None:
         """绘制GPU利用率分析"""
-        sm_efficiencies = [(k.name, k.sm_efficiency) for k in self.parser.kernels 
+        sm_efficiencies = [(k.name, k.sm_efficiency) for k in self.parser.kernels
                           if k.sm_efficiency is not None]
         
         if not sm_efficiencies:
@@ -667,7 +778,7 @@ class NCUVisualizer:
         fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
         
         # SM效率柱状图
-        colors = ['red' if eff < 30 else 'orange' if eff < 60 else 'green' 
+        colors = ['red' if eff < 30 else 'orange' if eff < 60 else 'green'
                  for eff in efficiencies]
         
         ax1.bar(range(len(names)), efficiencies, color=colors)
@@ -683,7 +794,7 @@ class NCUVisualizer:
         ax2.set_xlabel('SM 效率 (%)')
         ax2.set_ylabel('Kernel 数量')
         ax2.set_title('SM效率分布')
-        ax2.axvline(x=sum(efficiencies)/len(efficiencies), color='red', 
+        ax2.axvline(x=sum(efficiencies)/len(efficiencies), color='red',
                    linestyle='--', label=f'平均值: {sum(efficiencies)/len(efficiencies):.1f}%')
         ax2.legend()
         ax2.grid(True, alpha=0.3)
@@ -695,9 +806,9 @@ class NCUVisualizer:
     def _plot_memory_performance(self) -> None:
         """绘制内存性能分析"""
         # 收集内存相关数据
-        bandwidth_data = [(k.name, k.dram_bandwidth) for k in self.parser.kernels 
+        bandwidth_data = [(k.name, k.dram_bandwidth) for k in self.parser.kernels
                          if k.dram_bandwidth is not None]
-        l2_hit_rates = [(k.name, k.l2_hit_rate) for k in self.parser.kernels 
+        l2_hit_rates = [(k.name, k.l2_hit_rate) for k in self.parser.kernels
                        if k.l2_hit_rate is not None]
         
         fig, axes = plt.subplots(2, 2, figsize=(15, 10))
@@ -713,7 +824,7 @@ class NCUVisualizer:
         # L2命中率
         if l2_hit_rates:
             names, rates = zip(*l2_hit_rates)
-            colors = ['red' if rate < 50 else 'orange' if rate < 80 else 'green' 
+            colors = ['red' if rate < 50 else 'orange' if rate < 80 else 'green'
                      for rate in rates]
             axes[0, 1].bar(range(len(names)), rates, color=colors)
             axes[0, 1].set_title('L2 缓存命中率')
@@ -820,7 +931,7 @@ class NCUVisualizer:
         severity_colors = {
             'critical': '#ff4444',
             'high': '#ff8844',
-            'medium': '#ffcc44', 
+            'medium': '#ffcc44',
             'low': '#88cc88'
         }
         bar_colors = [severity_colors.get(s, '#cccccc') for s in severities]
@@ -842,7 +953,7 @@ class NCUVisualizer:
         # 选择前几个有完整数据的kernel
         complete_kernels = []
         for k in self.parser.kernels:
-            if (k.sm_efficiency is not None and 
+            if (k.sm_efficiency is not None and
                 k.achieved_occupancy is not None and
                 k.dram_bandwidth is not None):
                 complete_kernels.append(k)
@@ -1081,7 +1192,7 @@ NVIDIA Nsight Compute (NCU) 性能分析报告
         if not recommendations:
             recommendations = [
                 "• 监控kernel性能指标，识别优化机会",
-                "• 考虑使用Tensor Core加速适合的工作负载", 
+                "• 考虑使用Tensor Core加速适合的工作负载",
                 "• 优化内存访问模式以提高带宽利用率",
                 "• 平衡占用率和每个线程的资源使用"
             ]
