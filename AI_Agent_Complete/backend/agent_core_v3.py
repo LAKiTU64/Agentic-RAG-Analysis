@@ -51,14 +51,14 @@ class AIAgent:
         self.last_analysis_table: Optional[str] = None
 
         # 向量知识库相关
-        kb_config = config.get("vector_store", {})
-        self.embedding_model = kb_config.get("embedding_model")
-        self.persist_directory = kb_config.get("persist_directory")
-        self.chunk_size = kb_config.get("chunk_size")
-        self.chunk_overlap = kb_config.get("chunk_overlap")
-        self.default_search_k = kb_config.get("default_search_k", 8)
-        self.similarity_threshold = kb_config.get("similarity_threshold", 0.75)
-        self.kb = VectorKBManager()
+        # kb_config = config.get("vector_store", {})
+        # self.embedding_model = kb_config.get("embedding_model")
+        # self.persist_directory = kb_config.get("persist_directory")
+        # self.chunk_size = kb_config.get("chunk_size")
+        # self.chunk_overlap = kb_config.get("chunk_overlap")
+        # self.default_search_k = kb_config.get("default_search_k", 8)
+        # self.max_distance = kb_config.get("max_distance", 0.5)
+        self.kb = VectorKBManager(config=config)
 
         # 对话历史缓冲区
         self.chat_history: List[Dict[str, str]] = []  # 对话历史（完整保留）
@@ -490,7 +490,7 @@ class AIAgent:
         )
         search_query = parsed_raw.get("search_query") or message
         retrieved_contexts = self.kb.search(
-            query=search_query, k=self.default_search_k, where_filter=where_filter
+            query=search_query, where_filter=where_filter
         )
         # debug用：打印重写后的query和用于元数据过滤的where_filter
         # print(f"search_query: {search_query}")
