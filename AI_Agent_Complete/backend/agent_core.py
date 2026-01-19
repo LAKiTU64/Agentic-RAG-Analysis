@@ -155,7 +155,7 @@ class AIAgent:
             仅输出以下单词之一：{" | ".join(supported_intents)}，不要解释，不要标点，不要JSON。
             
             ### 判断原则
-            1. 优先看**当前query**，历史仅作辅助。
+            1. 优先看**用户当前输入**，历史仅作辅助。
             2. 若无法明确归类，请返回"chat"。
 
             ### 当前可用模型参考（仅作背景参考，不影响分类）
@@ -202,7 +202,7 @@ class AIAgent:
     ) -> Dict[str, Any]:
         """
         从用户查询中提取原始的模型名称、分析参数和改写后的query。后续将其转为性能分析的参数，或者用于RAG-QA的filter。
-        经过了复杂的心理斗争，我决定把提取json和改写query放在一起，因为这样做语义更连贯。
+        把提取json和改写query放在一起，因为这样做语义更连贯。
         返回示例请参考下面的prompt。
 
         """
@@ -459,6 +459,8 @@ class AIAgent:
         从用户消息中提取模型和参数，启动分析流程，并返回结果摘要或错误信息。
         """
         try:
+            response = """✅ **已解析您的请求**\n"""
+
             # Step 1: 解析分析参数（model + kwargs）
             parsed_raw = await self._parse_raw_params(message)
             parsed = self._finalize_params_for_analysis(parsed_raw)
@@ -468,14 +470,14 @@ class AIAgent:
             params = parsed.get("params", {})
             analysis_type = parsed.get("analysis_type", None)
 
-            available = ", ".join(self.model_mappings.keys())
-            if not model_name:
-                return f"❌ **分析失败**: 未识别到有效的模型名称，请明确指定模型。可用模型：{available}"
+            response += f"🤖 **模型**: {model_name or '未指定'}\n🔬 **分析类型**: {analysis_type}\n📊 **参数**: {params}\n"
 
-            if model_name not in self.model_mappings:
-                available = ", ".join(self.model_mappings.keys())
+            available = ", ".join(self.model_mappings.keys())
+
+            if not model_name or model_name not in self.model_mappings:
                 return (
-                    f"❌ **分析失败**: 不支持模型 '{model_name}'。可用模型：{available}"
+                    response
+                    + f"❌ **分析失败**: 未指定模型或模型不可用。可用模型：{available}"
                 )
 
             # Step 2: 执行分析流程
@@ -488,14 +490,15 @@ class AIAgent:
                     f"或者模型文件是否存在于: {self.models_path}"
                 )
 
-            return await self._run_analysis(
+            analysis_result = await self._run_analysis(
                 model_path=model_path,
                 analysis_type=analysis_type,
                 params=params,
             )
+            return response + analysis_result
 
         except Exception as e:
-            return f"❌ **分析执行异常**: {str(e)}"
+            return response + f"❌ **分析执行异常**: {str(e)}"
 
     async def _agent_rag_qa(self, message: str) -> str:
         """
@@ -626,6 +629,7 @@ class AIAgent:
 
         return response_text
 
+    # 已整合进_agent_analysis()
     async def _execute_analysis_flow(
         self, model_name: str, analysis_type: str, params: Dict
     ) -> str:
@@ -640,104 +644,6 @@ class AIAgent:
         return await self._run_analysis(
             model_path=model_path, analysis_type=analysis_type, params=params
         )
-
-    """
-    
-    
-
-    分割符
-
-
-
-    """
-
-    async def process_message(self, message: str) -> str:
-        """处理用户消息并执行分析"""
-
-        # 提取模型名称
-        model_name = self._extract_model_name(message)
-
-        # 提取分析类型
-        analysis_type = self._extract_analysis_type(message)
-
-        # 提取参数
-        params = self._extract_parameters(message)
-
-        # 如果没有提供参数，使用默认值
-        if not params.get("batch_size"):
-            params["batch_size"] = self.analysis_defaults.get("batch_size", [1])
-        if not params.get("input_len"):
-            params["input_len"] = self.analysis_defaults.get("input_len", [128])
-        if not params.get("output_len"):
-            params["output_len"] = self.analysis_defaults.get("output_len", [1])
-
-        # 生成初始响应
-        response = f"""✅ **已解析您的请求**
-
-🤖 **模型**: {model_name or "未指定"}
-🔬 **分析类型**: {analysis_type}
-📊 **参数**:
-  • batch_size: {params.get("batch_size", [])}
-  • input_len: {params.get("input_len", [])}
-  • output_len: {params.get("output_len", [])}
-
-"""
-
-        # 如果模型名称明确，执行实际分析
-        if model_name:
-            # 获取模型路径
-            model_path = self._resolve_model_path(model_name)
-
-            if not model_path:
-                response += f"""
-❌ **错误**: 未找到模型 '{model_name}'
-📋 可用模型: {", ".join(self.model_mappings.keys())}
-
-💡 **提示**: 请在 config.yaml 中配置模型路径
-"""
-                return response
-
-            response += f"""🚀 **开始分析...**
-
-📁 模型路径: {model_path}
-⏳ 预计时间: 3-10分钟（取决于参数组合数量）
-
-"""
-
-            # 执行分析（异步）
-            try:
-                analysis_results = await self._run_analysis(
-                    model_path=model_path, analysis_type=analysis_type, params=params
-                )
-
-                response += analysis_results
-
-            except Exception as e:
-                response += f"""
-❌ **分析失败**: {str(e)}
-
-💡 **可能原因**:
-1. NSys/NCU工具未安装或未在PATH中
-2. 模型路径不正确
-3. GPU不可用或驱动问题
-4. 参数配置错误
-
-🔧 **调试步骤**:
-1. 运行 `nsys --version` 和 `ncu --version` 检查工具
-2. 运行 `nvidia-smi` 检查GPU
-3. 检查模型路径是否存在
-"""
-        else:
-            response += """
-💡 **下一步**:
-请指定要分析的模型名称，例如：
-• "分析 llama-7b"
-• "对 qwen-14b 进行性能分析"
-• "使用 ncu 深度分析 chatglm-6b"
-
-📋 **可用模型**: """ + ", ".join(self.model_mappings.keys())
-
-        return response
 
     async def _run_analysis(
         self, model_path: str, analysis_type: str, params: Dict
@@ -1391,6 +1297,7 @@ class AIAgent:
 
         return None
 
+    # 改为LLM识别
     def _extract_model_name(self, prompt: str) -> Optional[str]:
         """提取模型名称"""
 
@@ -1417,6 +1324,7 @@ class AIAgent:
 
         return None
 
+    # 改为LLM识别
     def _extract_analysis_type(self, prompt: str) -> str:
         """提取分析类型"""
         prompt_lower = prompt.lower()
@@ -1439,6 +1347,7 @@ class AIAgent:
         else:
             return "auto (集成分析: nsys + ncu)"
 
+    # 改为LLM识别
     def _extract_parameters(self, prompt: str) -> Dict:
         """提取参数"""
         params = {}
@@ -1489,6 +1398,7 @@ class AIAgent:
         """获取可用的模型列表"""
         return list(self.model_mappings.keys())
 
+    # 没用到
     def get_analysis_status(self) -> Dict:
         """获取当前分析状态"""
         return {
