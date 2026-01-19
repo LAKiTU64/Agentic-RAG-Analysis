@@ -11,7 +11,7 @@ sglang_path: "/sgl-workspace/sglang/python/sglang"
 # - Linux: "/home/user/sglang"
 
 # 模型文件路径（必须配置）
-models_path: "/workspaces/"
+models_path: "/workspaces/models/"
 # 示例：
 # - Windows: "D:/Models" 或 "C:/Users/xxx/models"
 # - Linux: "/data/models"
