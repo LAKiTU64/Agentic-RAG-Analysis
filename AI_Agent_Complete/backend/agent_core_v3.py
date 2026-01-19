@@ -17,7 +17,7 @@ from prompt_toolkit.styles import Style
 sys.path.insert(0, str(Path(__file__).parent))
 
 from utils.nsys_to_ncu_analyzer import create_sglang_analysis_workflow
-from offline_llm_v3 import get_offline_qwen_client
+from offline_llm import get_offline_qwen_client
 from knowledge_bases.vector_kb_manager import VectorKBManager
 
 
@@ -449,6 +449,7 @@ class AIAgent:
             # Step 1: 解析分析参数（model + kwargs）
             parsed_raw = await self._parse_raw_params(message)
             parsed = self._finalize_params_for_analysis(parsed_raw)
+            print(parsed)
 
             model_name = parsed.get("model")
             params = parsed.get("params", {})
