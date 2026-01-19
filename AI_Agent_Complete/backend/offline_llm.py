@@ -15,32 +15,38 @@ _PROMPT_TEMPLATE = (
 
 
 def _truncate_kernel_column(markdown: str, max_len: int = 30) -> str:
+    """截断过长的 Kernel 名称以防止表格变形"""
+
     lines = markdown.splitlines()
     truncated = []
     for line in lines:
         stripped = line.strip()
-        if '|' not in stripped:
+        if "|" not in stripped:
             truncated.append(line)
             continue
 
-        core = stripped.strip('|')
-        cells = [cell.strip() for cell in core.split('|')]
+        core = stripped.strip("|")
+        cells = [cell.strip() for cell in core.split("|")]
         if not cells:
             truncated.append(line)
             continue
 
-        header_or_separator = cells[0].lower() == 'kernel' or all(set(cell) <= {'-', ':', ' '} for cell in cells)
+        header_or_separator = cells[0].lower() == "kernel" or all(
+            set(cell) <= {"-", ":", " "} for cell in cells
+        )
         if header_or_separator:
             truncated.append(line)
             continue
 
         # cells[0] = cells[0][:max_len]
-        rebuilt = '| ' + ' | '.join(cells) + ' |'
+        rebuilt = "| " + " | ".join(cells) + " |"
         truncated.append(rebuilt)
-    return '\n'.join(truncated)
+    return "\n".join(truncated)
 
 
 def _extract_table_only(markdown: str) -> str:
+    """从混合文本中提取 Markdown 表格部分"""
+
     lines = markdown.splitlines()
     collected = []
     table_started = False
@@ -50,20 +56,24 @@ def _extract_table_only(markdown: str) -> str:
             if table_started:
                 break
             continue
-        if '|' not in stripped:
+        if "|" not in stripped:
             if table_started:
                 break
             continue
         if not table_started:
-            header_cells = [cell.strip().lower() for cell in stripped.strip('|').split('|')]
-            if not header_cells or 'kernel' not in header_cells[0]:
+            header_cells = [
+                cell.strip().lower() for cell in stripped.strip("|").split("|")
+            ]
+            if not header_cells or "kernel" not in header_cells[0]:
                 continue
             table_started = True
-        collected.append(stripped if stripped.startswith('|') else f"| {stripped} |")
-    return '\n'.join(collected).strip()
+        collected.append(stripped if stripped.startswith("|") else f"| {stripped} |")
+    return "\n".join(collected).strip()
 
 
 def _parse_kernel_entries(report_text: str) -> List[Dict[str, str]]:
+    """正则兜底：从报告文本中直接提取数据"""
+
     entries: List[Dict[str, str]] = []
     current: Dict[str, str] = {}
     for line in report_text.splitlines():
@@ -91,6 +101,8 @@ def _parse_kernel_entries(report_text: str) -> List[Dict[str, str]]:
 
 
 def _build_table_from_entries(entries: List[Dict[str, str]]) -> str:
+    """将字典列表转换为 Markdown 表格"""
+
     if not entries:
         return ""
     rows = ["| Kernel | Duration(ms) | Ratio(%) |", "| --- | --- | --- |"]
@@ -98,10 +110,12 @@ def _build_table_from_entries(entries: List[Dict[str, str]]) -> str:
         rows.append(f"| {item['name']} | {item['duration']} | {item['ratio']} |")
     return "\n".join(rows)
 
+
 class OfflineQwenClient:
     def __init__(self, model_dir: Path):
         if not model_dir.exists():
             raise FileNotFoundError(f"模型目录不存在: {model_dir}")
+        print(f"加载本地LLM模型路径: {model_dir} ...")
         self.tokenizer = AutoTokenizer.from_pretrained(
             model_dir,
             trust_remote_code=True,
@@ -117,6 +131,94 @@ class OfflineQwenClient:
             tokenizer=self.tokenizer,
         )
 
+        # 将 pytorch 设置为eval模式，确保推理结果的一致
+        self.model.eval()
+
+    # 统一的LLM生成接口
+    def generate(
+        self,
+        prompt: str,
+        max_tokens: int = 1024,
+        mode: str = "conversation",
+        temperature: Optional[float] = None,
+        system_prompt: Optional[str] = None,
+    ):
+        """
+        统一的LLM生成接口
+
+        Args:
+            prompt: 用户输入
+            max_tokens: 最大生成长度
+            mode:
+                - "structured": 强制 JSON 输出，Temp=0
+                - "conversation": 自然对话，Temp=0.3
+            temperature: 覆盖默认温度
+            system_prompt: 覆盖默认 System Prompt
+        """
+
+        # 1. 配置默认参数
+        do_sample = True
+        default_temp = 0.3
+
+        # 2. 构建 Messages
+        messages = []
+
+        if mode == "structured":
+            # 如果是structure模式则覆盖温度和system_prompt
+            default_temp = 0.0
+            do_sample = False
+            sys_content = system_prompt or (
+                "你是一个高性能计算专家。请直接输出结果，"
+                "严禁输出 Markdown 代码块标记，只输出纯 JSON 字符串。"
+            )
+            messages.append({"role": "system", "content": sys_content})
+
+        elif mode == "conversation":
+            if system_prompt:
+                messages.append({"role": "system", "content": system_prompt})
+            # 如果没有指定 system_prompt，Instruct 模型通常不需要显式 System 也能工作良好
+            # 或者可以加一个通用的: "You are a helpful assistant."
+
+        messages.append({"role": "user", "content": prompt})
+
+        # 3. 应用 Chat Template (核心：适配 Instruct 模型)
+        input_ids = self.tokenizer.apply_chat_template(
+            messages, tokenize=True, add_generation_prompt=True, return_tensors="pt"
+        ).to(self.model.device)
+
+        # 4. 确定生成参数
+        actual_temp = temperature if temperature is not None else default_temp
+
+        # 防止温度为0时 do_sample=True 导致报错
+        if actual_temp == 0.0:
+            do_sample = False
+
+        gen_kwargs = {
+            "max_new_tokens": max_tokens,
+            "do_sample": do_sample,
+            "pad_token_id": self.tokenizer.eos_token_id,
+        }
+
+        if do_sample:
+            gen_kwargs["temperature"] = actual_temp
+            gen_kwargs["top_p"] = 0.9
+
+        # 5. 执行生成
+        with torch.no_grad():
+            outputs = self.model.generate(input_ids, **gen_kwargs)
+
+        generated_ids = outputs[0][input_ids.shape[1] :]
+        generated = self.tokenizer.decode(generated_ids, skip_special_tokens=True)
+
+        # 6. 全局清洗 <think> 标签 (防止思维链污染结果)
+        # 即使在 conversation 模式下，如果不需要展示思考过程，清洗掉也是安全的
+        # 如果你想保留 conversation 的思考过程，可以将此逻辑移到 mode check 内
+        generated = re.sub(
+            r"<think>.*?</think>", "", generated, flags=re.DOTALL
+        ).strip()
+
+        return generated
+
     def _generate_text(self, prompt: str, max_new_tokens: int = 2000) -> str:
         outputs = self.pipeline(
             prompt,
@@ -126,14 +228,14 @@ class OfflineQwenClient:
         )
         generated = outputs[0]["generated_text"]
         if generated.startswith(prompt):
-            generated = generated[len(prompt):]
+            generated = generated[len(prompt) :]
         return generated.strip()
 
     def report_to_table(self, report_text: str) -> str:
         prompt = _PROMPT_TEMPLATE.format(report=report_text)
         generated = self._generate_text(prompt, max_new_tokens=10000)
         cleaned = _extract_table_only(generated)
-        if not cleaned or cleaned.count('|') < 6:
+        if not cleaned or cleaned.count("|") < 6:
             parsed_entries = _parse_kernel_entries(report_text)
             cleaned = _build_table_from_entries(parsed_entries)
         if not cleaned:
@@ -216,8 +318,7 @@ class OfflineQwenClient:
             "每条建议需包含: 关注的瓶颈、优化思路、可能的验证方式。"
             "若多个 GPU 之间存在差异，请指出并给出针对性的措施。"
             "格式要求使用 Markdown 列表。\n\n"
-            "报告内容如下：\n"
-            + "\n\n".join(report_sections)
+            "报告内容如下：\n" + "\n\n".join(report_sections)
         )
 
         generated = self._generate_text(prompt, max_new_tokens=max_new_tokens)
@@ -250,8 +351,7 @@ class OfflineQwenClient:
             "每个片段包含多个 kernel 的指标。请基于这些原始数值，给出 3-5 条可执行的优化建议。"
             "每条建议需要说明关注的指标、优化方向，以及后续验证方式。若不同 GPU 或 kernel 之间指标存在差异，"
             "请指出差异并给出针对性的建议。仅输出 Markdown 列表，不要包含额外说明。\n\n"
-            "原始数据片段如下：\n"
-            + "\n\n".join(snippet_sections)
+            "原始数据片段如下：\n" + "\n\n".join(snippet_sections)
         )
 
         generated = self._generate_text(prompt, max_new_tokens=max_new_tokens)
@@ -260,8 +360,10 @@ class OfflineQwenClient:
             return "⚠️ 离线模型未返回有效的原始数据建议"
         return cleaned
 
+
 _client_lock = threading.Lock()
 _cached_client: Optional[OfflineQwenClient] = None
+
 
 def get_offline_qwen_client(model_dir: Path) -> OfflineQwenClient:
     global _cached_client
