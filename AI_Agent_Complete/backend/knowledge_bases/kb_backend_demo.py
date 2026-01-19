@@ -1,14 +1,21 @@
-from fastapi import UploadFile, File, HTTPException, APIRouter
+from fastapi import Request, UploadFile, File, HTTPException, APIRouter
 import tempfile
 import os
-from .vector_kb_manager import VectorKBManager  # 替换为你的模块名
 
 router = APIRouter()
-kb = VectorKBManager()  # 初始化一次
+
+
+def _get_kb_from_request(request: Request):
+    kb = getattr(request.app.state, "kb", None)
+    if kb is None:
+        raise HTTPException(500, "知识库未初始化，请在应用启动时由 AIAgent 注入")
+    return kb
 
 
 @router.post("/upload")
-async def upload(file: UploadFile = File(...)):
+async def upload(request: Request, file: UploadFile = File(...)):
+    kb = _get_kb_from_request(request)
+
     # 1. 检查文件大小（安全限制，可保留）
     content = await file.read()
     if len(content) > 5_000_000:  # 5MB
@@ -33,7 +40,7 @@ async def upload(file: UploadFile = File(...)):
 
 # 更新元数据的接口
 @router.patch("/document/{doc_id}/metadata")
-async def update_metadata(doc_id: str, payload: dict):
+async def update_metadata(request: Request, doc_id: str, payload: dict):
     """
     推荐格式：
     {
@@ -43,6 +50,8 @@ async def update_metadata(doc_id: str, payload: dict):
 
     兼容旧格式：{"model_name":"xxx"}
     """
+    kb = _get_kb_from_request(request)
+
     if "set" in payload or "delete" in payload:
         set_data = payload.get("set", {}) or {}
         delete_keys = payload.get("delete", []) or []
@@ -57,21 +66,24 @@ async def update_metadata(doc_id: str, payload: dict):
 
 
 @router.post("/search")
-async def search(query: str):
+async def search(request: Request, query: str):
+    kb = _get_kb_from_request(request)
     results = kb.search(query)
     return {"results": results}
 
 
 # 添加这些路由到你的 FastAPI app
 @router.get("/documents")
-async def list_documents():
+async def list_documents(request: Request):
     """获取文档列表和概览"""
+    kb = _get_kb_from_request(request)
     return kb.get_overview()
 
 
 @router.delete("/document/{doc_id}")
-async def delete_document_api(doc_id: str):
+async def delete_document_api(request: Request, doc_id: str):
     """删除文档（前端需要）"""
+    kb = _get_kb_from_request(request)
     result = kb.delete_document(doc_id)
     if not result["ok"]:
         raise HTTPException(404, "文档不存在")
@@ -79,8 +91,9 @@ async def delete_document_api(doc_id: str):
 
 
 @router.get("/document/{doc_id}/metadata")
-async def get_metadata(doc_id: str):
+async def get_metadata(request: Request, doc_id: str):
     """获取单个文档的元数据"""
+    kb = _get_kb_from_request(request)
     result = kb.get_document_metadata(doc_id)
     if not result["ok"]:
         raise HTTPException(404, result.get("error", "未找到文档"))
