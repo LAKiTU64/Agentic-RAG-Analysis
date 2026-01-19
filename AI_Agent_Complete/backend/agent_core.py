@@ -470,7 +470,7 @@ class AIAgent:
             params = parsed.get("params", {})
             analysis_type = parsed.get("analysis_type", None)
 
-            response += f"🤖 **模型**: {model_name or '未指定'}\n🔬 **分析类型**: {analysis_type}\n📊 **参数**: {params}\n"
+            response += f"🤖 **模型**: {model_name or '未指定'}\n🔬 **分析类型**: {analysis_type or '未指定 (默认nsys+ncu)'}\n📊 **参数**: {params}\n"
 
             available = ", ".join(self.model_mappings.keys())
 
