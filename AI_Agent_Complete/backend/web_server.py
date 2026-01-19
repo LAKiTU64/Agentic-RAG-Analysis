@@ -221,7 +221,7 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-
+# new: 启动时初始化，新增知识库的支持
 @app.on_event("startup")
 async def startup_event():
     """启动时初始化"""
@@ -230,6 +230,7 @@ async def startup_event():
         try:
             agent = AIAgent(CONFIG)
             print("✅ AI Agent初始化成功")
+            app.state.kb = agent.kb
         except Exception as e:
             print(f"⚠️ AI Agent初始化失败: {e}")
 
