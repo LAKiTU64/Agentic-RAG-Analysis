@@ -84,6 +84,9 @@ class AIAgent:
             "chat": "打招呼、感谢、闲聊以及一切无法归类的内容（如“你好”、“你是谁”）。",
         }
 
+        # 待确认的分析任务缓存（用于分析前二次确认）
+        self.pending_analysis: Optional[Dict] = None
+
     def _format_history_str(
         self, history: List[Dict[str, str]], limit: int = -1
     ) -> str:
@@ -155,10 +158,12 @@ class AIAgent:
             仅输出以下单词之一：{" | ".join(supported_intents)}，不要解释，不要标点，不要JSON。
             
             ### 判断原则
-            1. 优先看**用户当前输入**，历史仅作辅助。
-            2. 若无法明确归类，请返回"chat"。
+            1. **动作优先**：如果用户使用了“分析一下”、“跑”、“测”等**动词**，具有**下指令**（Commanding）动作时，大概率是 `analysis`。
+            2. **查询区分**：当用户明确在**问问题**（Questioning）或**查询**（Query）时，选 `rag-qa`。
+            3. 优先看**用户当前输入**，历史仅作辅助。
+            4. 若无法明确归类，请返回"chat"。
 
-            ### 当前可用模型参考（仅作背景参考，不影响分类）
+            ### 当前可用模型参考（仅供参考，模型名不在名单内不影响意图判断）
             [{models_str}]
             
             ### 用户当前输入（主要判断依据）
@@ -375,10 +380,11 @@ class AIAgent:
     ) -> Optional[Dict[str, Any]]:
         """
         将message解析的参数转化为chroma语法的where_fileter
-         - 把解析出来的所有字段放在一个 dict 中，作为 where_filter
-         - 如果value是 None/null/空字符串，则忽略该字段
-         - _parse_raw_params返回的是一个嵌套字典，而chroma的metadata是扁平的，转换成where_filter时需要把params拍平
-         - 目前只实现了=，暂不支持>、<等范围查询
+        - 把解析出来的所有字段放在一个 dict 中，作为 where_filter
+        - 如果value是 None/null/空字符串，则忽略该字段
+        - _parse_raw_params返回的是一个嵌套字典，而chroma的metadata是扁平的，转换成where_filter时需要把params拍平
+        - 当存在多个过滤条件时，必须使用 "$and" 操作符包裹
+        - 目前只实现了=，暂不支持>、<等范围查询
         """
 
         if not isinstance(raw, dict):
@@ -396,13 +402,11 @@ class AIAgent:
             """试图把字符串形式的数字转为实际格式，例如 "128" -> 128 or "1.28" -> 1.28"""
             if isinstance(v, str):
                 s = v.strip()
-                # int
                 if s.isdigit() or (s.startswith("-") and s[1:].isdigit()):
                     try:
                         return int(s)
                     except Exception:
                         return v
-                # float
                 try:
                     if "." in s:
                         return float(s)
@@ -410,26 +414,33 @@ class AIAgent:
                     pass
             return v
 
-        where: Dict[str, Any] = {}
+        # 使用列表收集所有的独立条件
+        conditions = []
 
         # 1) 顶层字段（除了 params）
         for k, v in raw.items():
             if k == "params":
                 continue
-            if is_empty(v):
-                continue
-            where[k] = coerce_scalar(v)
+            if not is_empty(v):
+                conditions.append({k: coerce_scalar(v)})
 
         # 2) params 拍平
         params = raw.get("params")
         if isinstance(params, dict):
             for k, v in params.items():
-                if is_empty(v):
-                    continue
-                where[k] = coerce_scalar(v)
+                if not is_empty(v):
+                    conditions.append({k: coerce_scalar(v)})
 
-        print(where)
-        return where or None
+        # 3) 构建最终 filter
+        if not conditions:
+            return None
+
+        # 如果只有一个条件，直接返回该字典
+        if len(conditions) == 1:
+            return conditions[0]
+
+        # 如果有多个条件，用 $and 包裹
+        return {"$and": conditions}
 
     def _resolve_model_path(self, model_name: str) -> Optional[str]:
         """
@@ -477,32 +488,34 @@ class AIAgent:
             params = parsed.get("params", {})
             analysis_type = parsed.get("analysis_type", None)
 
-            response += f"🤖 **模型**: {model_name or '未指定'}\n🔬 **分析类型**: {analysis_type or '未指定 (默认nsys+ncu)'}\n📊 **参数**: {params}\n"
+            response += f"🤖 **模型**: {model_name or '未指定'}\n🔬 **分析类型**: {analysis_type or '自动 (默认nsys+ncu)'}\n📊 **参数**: {json.dumps(params, ensure_ascii=False)}\n\n"
 
-            available = ", ".join(self.model_mappings.keys())
-
+            # Step 2: 解析模型路径
             if not model_name or model_name not in self.model_mappings:
+                available = ", ".join(self.model_mappings.keys())
                 return (
                     response
-                    + f"❌ **分析失败**: 未指定模型或模型不可用。可用模型：{available}"
+                    + f"❌ **分析失败**: 未指定模型或模型不可用，请检查config.json。可用模型：{available}"
                 )
 
-            # Step 2: 执行分析流程
             model_path = self._resolve_model_path(model_name)
             if not model_path:
-                # 明确抛出错误，让用户知道是模型配置问题
-                raise ValueError(
-                    f"模型路径解析失败: '{model_name}'。\n"
-                    f"请检查 config.yaml 中的 'model_mappings' 是否包含该模型，"
-                    f"或者模型文件是否存在于: {self.models_path}"
+                return (
+                    response
+                    + "❌ **分析失败**: 模型在config.json的映射表内，但模型路径解析失败。"
                 )
 
-            analysis_result = await self._run_analysis(
-                model_path=model_path,
-                analysis_type=analysis_type,
-                params=params,
+            # Step 3: 将模型运行参数缓存到pending_analysis，以便二次确认
+            self.pending_analysis = {
+                "model_path": model_path,
+                "params": params,
+                "analysis_type": analysis_type,
+            }
+
+            return (
+                response
+                + "👉 **输入 y/Y 执行性能分析，输入其他字符取消**\n⚠️ **注意**: 性能分析可能耗时较长（3-10分钟）。\n"
             )
-            return response + analysis_result
 
         except Exception as e:
             return response + f"❌ **分析执行异常**: {str(e)}"
@@ -519,12 +532,14 @@ class AIAgent:
             {k: v for k, v in parsed_raw.items() if k != "search_query"}
         )
         search_query = parsed_raw.get("search_query") or message
+
+        # debug用：打印重写后的query和用于元数据过滤的where_filter
+        print(f"search_query: {search_query}")
+        print(f"where_filter: {where_filter}")
+
         retrieved_contexts = self.kb.search(
             query=search_query, where_filter=where_filter
         )
-        # debug用：打印重写后的query和用于元数据过滤的where_filter
-        # print(f"search_query: {search_query}")
-        # print(f"where_filter: {where_filter}")
 
         # Step 2: 构建 RAG 上下文和历史对话
         rag_context = ""
@@ -590,15 +605,51 @@ class AIAgent:
         raw = self.llm_client.generate(prompt, max_tokens=256).strip()
         return f"🤖 **闲聊模式**\n{raw}"
 
+    async def _execute_analysis_flow(self) -> str:
+        """执行用户已确认的性能分析任务"""
+
+        if not self.pending_analysis:
+            return "❌ 任务已过期或不存在，请重新发起分析请求。"
+
+        # 取出任务
+        task = self.pending_analysis
+        # 清空状态，防止重复执行
+        self.pending_analysis = None
+
+        start_msg = "🚀 **已确认，开始执行分析任务**...\n"
+
+        # 执行性能分析
+        try:
+            analysis_result = await self._run_analysis(
+                model_path=task["model_path"],
+                analysis_type=task["analysis_type"],
+                params=task["params"],
+            )
+            return start_msg + "\n" + analysis_result
+        except Exception as e:
+            return start_msg + f"\n❌ **执行过程中发生异常**: {str(e)}"
+
     async def process_message(self, message: str, intent: str = "auto") -> str:
         """
         Agentic-RAG 意图路由:
-        1. [Router] 意图识别 → 返回一个intent_mappings中的key （例如 "analysis" | "rag-qa" | "chat"）
-        2. [Branch] 根据意图进行分支处理
-        3. [History] 保存对话历史
+        1. [Checking Pending] 检测是否有待处理的性能分析任务
+        2. [Router] 意图识别 → 返回一个intent_mappings中的key （例如 "analysis" | "rag-qa" | "chat"）
+        3. [Branch] 根据意图进行分支处理
+        4. [History] 保存对话历史
         """
 
-        # Step1: 意图识别（返回一个intent_mappings中的key）
+        # Step1: 检测是否有待处理的性能分析任务（性能分析前的二次确认）
+        if self.pending_analysis:
+            msg_lower = message.lower().strip()
+
+            # 用户输入y/Y确认执行
+            if msg_lower == "y":
+                return await self._execute_analysis_flow()
+            else:
+                self.pending_analysis = None
+                return "🚫 未检测到有效确认字符 (y/Y)，取消性能分析"
+
+        # Step2: 意图识别（返回一个intent_mappings中的key）
         try:
             intent = await self._parse_intent(message, intent)
         except Exception as e:
@@ -606,7 +657,7 @@ class AIAgent:
 
         response_text = ""
 
-        # Step2: 根据意图路由到对应agent
+        # Step3: 根据意图路由到对应agent
         if intent == "analysis":
             # === 分支 A: 性能分析 (Analysis) ===
             print("[analysis] 识别为分析意图")
@@ -626,7 +677,7 @@ class AIAgent:
             # 理论上不会走到这里
             response_text = "❓ 无法理解您的意图，请换种方式提问。"
 
-        # Step3: 保存对话历史，如果intent=analysis，则只返回摘要
+        # Step4: 保存对话历史，如果intent=analysis，则只返回摘要
         self.chat_history.append({"role": "user", "content": message})
 
         history_response = (
