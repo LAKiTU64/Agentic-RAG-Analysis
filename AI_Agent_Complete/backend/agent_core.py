@@ -636,22 +636,6 @@ class AIAgent:
 
         return response_text
 
-    # 已整合进_agent_analysis()
-    async def _execute_analysis_flow(
-        self, model_name: str, analysis_type: str, params: Dict
-    ) -> str:
-        model_path = self._resolve_model_path(model_name)
-        if not model_path:
-            # 明确抛出错误，让用户知道是模型配置问题
-            raise ValueError(
-                f"模型路径解析失败: '{model_name}'。\n"
-                f"请检查 config.yaml 中的 'model_mappings' 是否包含该模型，"
-                f"或者模型文件是否存在于: {self.models_path}"
-            )
-        return await self._run_analysis(
-            model_path=model_path, analysis_type=analysis_type, params=params
-        )
-
     async def _run_analysis(
         self, model_path: str, analysis_type: str, params: Dict
     ) -> str:
