@@ -37,14 +37,14 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
 import yaml
-from backend.offline_llm_v3 import get_offline_qwen_client
+from backend.offline_llm import get_offline_qwen_client
 
 # new: 引入知识库管理模块
-from backend.knowledge_bases.kb_backend_demo import router as knowledge_base_router
+from backend.knowledge_bases.vector_kb_api import router as knowledge_base_router
 
 # 导入AI Agent核心 & 知识库摄取
 try:
-    from backend.agent_core_v3 import AIAgent
+    from backend.agent_core import AIAgent
 except Exception as e:
     print(f"无法导入 AIAgent: {e}")
 try:
