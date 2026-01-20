@@ -323,9 +323,10 @@ async def handle_websocket_message(session_id: str, message_data: dict):
     message_type = message_data.get("type", "")
     content = message_data.get("content", "")
     api_choice = message_data.get("api", "auto")
+    intent_choice = message_data.get("intent", "auto")  # 提取 intent 字段
 
     if message_type == "user_message":
-        await process_user_message(session_id, content, api_choice)
+        await process_user_message(session_id, content, api_choice, intent_choice)
 
     elif message_type == "ping":
         await manager.send_message(

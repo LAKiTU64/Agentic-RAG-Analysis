@@ -540,7 +540,7 @@
 
             <!-- new: 知识库管理界面 -->
             <div style="text-align:center;margin:15px 0">
-                <button onclick="window.location.href='/kb'"
+                <button onclick="window.open('/kb', '_blank')""
                     style="background:#6366f1;color:white;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:500">
                     🧠 管理知识库
                 </button>
@@ -651,7 +651,7 @@
                     <!-- new: 意图选择器 - 与API选择器在同一行 -->
                     <label for="intent-select" style="margin-left: 15px;">选择意图：</label>
                     <select id="intent-select" style="min-width: 180px;">
-                        <option value="auto">自动识别 (Auto)</option>
+                        <option value="auto">智能推荐 (Auto)</option>
                         <option value="analysis">性能分析 (Analysis)</option>
                         <option value="rag-qa">知识库查询 (RAG-QA)</option>
                         <option value="chat">闲聊/其他 (Chat)</option>
