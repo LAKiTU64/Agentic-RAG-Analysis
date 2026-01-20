@@ -648,7 +648,16 @@
                         <option value="ncu">NCU 深度分析</option>
                         <option value="custom">自定义工具链</option>
                     </select>
+                    <!-- new: 意图选择器 - 与API选择器在同一行 -->
+                    <label for="intent-select" style="margin-left: 15px;">选择意图：</label>
+                    <select id="intent-select" style="min-width: 180px;">
+                        <option value="auto">自动识别 (Auto)</option>
+                        <option value="analysis">性能分析 (Analysis)</option>
+                        <option value="rag-qa">知识库查询 (RAG-QA)</option>
+                        <option value="chat">闲聊/其他 (Chat)</option>
+                    </select>
                 </div>
+
                 <div class="input-area">
                     <textarea id="message-input" class="message-input"
                         placeholder="请描述您的分析需求，例如：分析 llama-7b 模型，batch_size=8,16" rows="1"></textarea>
@@ -838,6 +847,7 @@
                 type: 'user_message',
                 content: content,
                 api: selectedApi,
+                intent: document.getElementById('intent-select'), // new: 传递意图
                 timestamp: new Date().toISOString()
             };
 

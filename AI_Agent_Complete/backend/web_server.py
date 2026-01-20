@@ -339,7 +339,9 @@ def resolve_api_selection(api: str) -> str:
     return api or "langchain"
 
 
-async def process_user_message(session_id: str, message: str, api: str = "auto"):
+async def process_user_message(
+    session_id: str, message: str, api: str = "auto", intent: str = "auto"
+):
     """处理用户消息"""
 
     try:
@@ -359,7 +361,7 @@ async def process_user_message(session_id: str, message: str, api: str = "auto")
             },
         )
 
-        response = await dispatch_api_request(resolved_api, message)
+        response = await dispatch_api_request(resolved_api, message, intent)
 
         if resolved_api == "langchain" and agent is not None:
             latest_dir = getattr(agent, "last_analysis_dir", None)
@@ -387,10 +389,10 @@ async def process_user_message(session_id: str, message: str, api: str = "auto")
         )
 
 
-async def dispatch_api_request(api: str, message: str) -> str:
+async def dispatch_api_request(api: str, message: str, intent: str = "auto") -> str:
     if api == "langchain":
         if agent:
-            return await agent.process_message(message)
+            return await agent.process_message(message, intent)
         return generate_placeholder_response("langchain", message)
     if api == "nsys":
         return generate_placeholder_response("nsys", message)
