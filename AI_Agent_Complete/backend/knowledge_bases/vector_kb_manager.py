@@ -402,7 +402,7 @@ class VectorKBManager:
             shutil.rmtree(self.persist_directory)
         self._load_or_create(is_reset=False)
 
-    def as_retrieriter(self, **kwargs):
+    def as_retriever(self, **kwargs):
         from langchain_core.documents import Document
         from langchain_core.retrievers import BaseRetriever
         from pydantic import PrivateAttr
@@ -521,7 +521,7 @@ if __name__ == "__main__":
 
     # 6. 测试 as_retriever + filter（LangChain 标准用法）
     print("\nStep 6: 测试 as_retriever + filter\n")
-    retriever = kb.as_retrieriter(k=3, max_distance=0.6)
+    retriever = kb.as_retriever(k=3, max_distance=0.6)
     docs = retriever.invoke(
         "性能瓶颈",
         filter={"input_len": {"$gt": 511}},  # 利用 runtime_info 中的 accuracy

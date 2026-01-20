@@ -77,7 +77,7 @@ class SGLangAnalyzeRequest(BaseModel):
 
     model_path: str
     batch_size: int = 1
-    input_len: int = 128
+    input_len: int = 1024
     output_len: int = 1
     top_k: int = 20
     min_duration_ms: float = 1.0
@@ -91,7 +91,7 @@ class AnalysisSubmitRequest(BaseModel):
 
     model_path: str
     batch_size: int = 1
-    input_len: int = 128
+    input_len: int = 1024
     output_len: int = 1
     top_k: int = 20
     min_duration_ms: float = 1.0
@@ -113,7 +113,7 @@ class FullAnalysisRequest(BaseModel):
 
     model_path: str
     batch_size: int = 1
-    input_len: int = 128
+    input_len: int = 1024
     output_len: int = 1
     top_k: int = 20
     min_duration_ms: float = 1.0

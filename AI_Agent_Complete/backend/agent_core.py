@@ -365,7 +365,7 @@ class AIAgent:
     def _finalize_params_for_analysis(self, raw: Dict[str, Any]) -> Dict[str, Any]:
         """对message解析的参数做默认值补全，用于性能分析"""
 
-        defaults = {"batch_size": 1, "input_len": 128, "output_len": 1}
+        defaults = {"batch_size": 1, "input_len": 1024, "output_len": 1}
         params = {**defaults, **(raw.get("params") or {})}
         analysis_type = raw.get("analysis_type")
 
@@ -704,7 +704,7 @@ class AIAgent:
 
         # 获取参数组合
         batch_sizes = params.get("batch_size", [1])
-        input_lens = params.get("input_len", [128])
+        input_lens = params.get("input_len", [1024])
         output_lens = params.get("output_len", [1])
 
         # 只分析第一组参数（避免时间过长）

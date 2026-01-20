@@ -164,6 +164,7 @@
                     <thead>
                         <tr style="text-align:left; border-bottom:1px solid #e2e8f0;">
                             <th style="padding:8px;">Key</th>
+                            <th style="padding:8px; width:100px;">Type</th> <!-- 新增 Type 列 -->
                             <th style="padding:8px;">Value</th>
                             <th style="padding:8px; width:90px;">操作</th>
                         </tr>
@@ -293,7 +294,7 @@
         let currentDocId = null;
         let originalMetadata = {};
         let rowStates = [];
-        // rowStates: [{origKey, key, value, deleted:false}]
+        // rowStates: [{origKey, key, value, type, deleted:false, isNew:bool}]
 
         function showModal(show) {
             document.getElementById("meta-modal").style.display = show ? "block" : "none";
@@ -302,11 +303,32 @@
         document.getElementById("meta-close-btn").addEventListener("click", () => showModal(false));
 
         document.getElementById("meta-add-row-btn").addEventListener("click", () => {
-            rowStates.push({ origKey: null, key: "", value: "", deleted: false, isNew: true });
+            rowStates.push({ 
+                origKey: null, 
+                key: "", 
+                value: "", 
+                type: "string",      // 默认类型
+                deleted: false, 
+                isNew: true 
+            });
             renderMetaTable();
         });
 
         document.getElementById("meta-save-btn").addEventListener("click", saveMetadataChanges);
+
+        // 辅助函数：根据类型尝试转换值（提升 UX）
+        function tryConvertValue(row) {
+            const { type, value } = row;
+            if (type === 'int') {
+                const num = parseInt(value);
+                row.value = isNaN(num) ? 0 : num;
+            } else if (type === 'float') {
+                const num = parseFloat(value);
+                row.value = isNaN(num) ? 0.0 : num;
+            } else {
+                row.value = String(value);
+            }
+        }
 
         async function openMetadataModal(docId, filename) {
             currentDocId = docId;
@@ -321,14 +343,21 @@
             const data = await res.json();
             originalMetadata = data.metadata || {};
 
-            // 转成行
-            rowStates = Object.entries(originalMetadata).map(([k, v]) => ({
-                origKey: k,
-                key: k,
-                value: v,
-                deleted: false,
-                isNew: false
-            }));
+            // 转成行，并推断类型
+            rowStates = Object.entries(originalMetadata).map(([k, v]) => {
+                let type = 'string';
+                if (typeof v === 'number') {
+                    type = Number.isInteger(v) ? 'int' : 'float';
+                }
+                return {
+                    origKey: k,
+                    key: k,
+                    value: v,
+                    type: type,          // 👈 记录类型
+                    deleted: false,
+                    isNew: false
+                };
+            });
 
             // key排序：protected靠前
             rowStates.sort((a, b) => {
@@ -354,6 +383,10 @@
                 const keyTd = document.createElement("td");
                 keyTd.style.padding = "8px";
 
+                const typeTd = document.createElement("td"); // 👈 新增 Type 列
+                typeTd.style.padding = "8px";
+                typeTd.style.width = "100px";
+
                 const valTd = document.createElement("td");
                 valTd.style.padding = "8px";
 
@@ -366,20 +399,42 @@
                 const keyInput = document.createElement("input");
                 keyInput.value = row.key ?? "";
                 keyInput.style.width = "100%";
-                keyInput.disabled = isProtected; // protected 不允许改key
+                keyInput.disabled = isProtected;
                 keyInput.addEventListener("input", (e) => {
                     rowStates[idx].key = e.target.value;
                 });
                 keyTd.appendChild(keyInput);
 
-                // value input（用 textarea 兼容长文本）
-                const valInput = document.createElement("textarea");
-                valInput.value = (row.value ?? "").toString();
-                valInput.rows = 1;
-                valInput.style.width = "100%";
-                valInput.disabled = false; // protected key 允许改 value 吗？通常也不允许。这里也禁用：
-                if (isProtected) valInput.disabled = true;
+                // type select
+                const typeSelect = document.createElement("select");
+                ["string", "int", "float"].forEach(t => {
+                    const opt = document.createElement("option");
+                    opt.value = t;
+                    opt.textContent = t;
+                    if (t === row.type) opt.selected = true;
+                    typeSelect.appendChild(opt);
+                });
+                typeSelect.disabled = isProtected;
+                typeSelect.addEventListener("change", (e) => {
+                    rowStates[idx].type = e.target.value;
+                    tryConvertValue(rowStates[idx]); // 类型切换时自动转换值
+                    renderMetaTable(); // 重新渲染以更新输入框类型
+                });
+                typeTd.appendChild(typeSelect);
 
+                // value input：根据类型决定控件
+                let valInput;
+                if (row.type === 'string') {
+                    valInput = document.createElement("textarea");
+                    valInput.rows = 1;
+                    valInput.value = String(row.value ?? "");
+                } else {
+                    valInput = document.createElement("input");
+                    valInput.type = "text"; // 使用 text 避免浏览器限制
+                    valInput.value = String(row.value ?? "");
+                }
+                valInput.style.width = "100%";
+                valInput.disabled = isProtected;
                 valInput.addEventListener("input", (e) => {
                     rowStates[idx].value = e.target.value;
                 });
@@ -390,7 +445,7 @@
                 delBtn.className = "btn btn-delete";
                 delBtn.textContent = "删除";
                 delBtn.type = "button";
-                delBtn.disabled = isProtected; // protected 不允许删
+                delBtn.disabled = isProtected;
                 delBtn.addEventListener("click", () => {
                     rowStates[idx].deleted = true;
                     renderMetaTable();
@@ -398,6 +453,7 @@
                 actTd.appendChild(delBtn);
 
                 tr.appendChild(keyTd);
+                tr.appendChild(typeTd); // 👈 插入 Type 列
                 tr.appendChild(valTd);
                 tr.appendChild(actTd);
                 tbody.appendChild(tr);
@@ -412,7 +468,6 @@
                 .filter(k => !protectedKeys.has(k));
 
             // 2) set：将当前未删除行汇总成最终键值
-            // 允许改key：如果改了key，相当于 delete oldKey + set newKey
             const setObj = {};
             const keySeen = new Set();
 
@@ -429,7 +484,21 @@
                 }
                 keySeen.add(k);
 
-                setObj[k] = r.value;
+                let finalValue = r.value;
+
+                // 👇 按用户指定的类型转换值
+                if (r.type === 'int') {
+                    const num = parseInt(finalValue);
+                    if (isNaN(num)) throw new Error(`字段 "${k}" 的值无法转为整数`);
+                    finalValue = num;
+                } else if (r.type === 'float') {
+                    const num = parseFloat(finalValue);
+                    if (isNaN(num)) throw new Error(`字段 "${k}" 的值无法转为浮点数`);
+                    finalValue = num;
+                }
+                // string 保持字符串
+
+                setObj[k] = finalValue;
 
                 // 如果是“改名”(origKey存在且不同)，额外删除 origKey
                 if (r.origKey && r.origKey !== k && !protectedKeys.has(r.origKey)) {
@@ -464,8 +533,6 @@
                 alert(e.message || "保存失败");
             }
         }
-
-
 
         // 初始加载
         refreshFileList();
