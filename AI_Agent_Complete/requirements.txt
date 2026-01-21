@@ -17,6 +17,7 @@ chromadb>=1.4.0
 langchain-text-splitters>=1.1.0
 pypdf>=6.5.0
 docx2txt>=0.8
+jq>=1.6.0
 
 # 环境配置与实用工具
 python-dotenv>=1.2.1
