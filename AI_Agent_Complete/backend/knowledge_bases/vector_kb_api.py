@@ -1,3 +1,4 @@
+import uuid
 from fastapi import Request, UploadFile, File, HTTPException, APIRouter
 import tempfile
 import os
@@ -98,6 +99,42 @@ async def get_metadata(request: Request, doc_id: str):
     if not result["ok"]:
         raise HTTPException(404, result.get("error", "未找到文档"))
     return result
+
+
+@router.get("/document/{doc_id}/chunks")
+async def get_document_chunks(request: Request, doc_id: str):
+    """获取指定 document_id 的所有 chunks（用于前端预览切分效果）"""
+    kb = _get_kb_from_request(request)
+    try:
+        uuid.UUID(doc_id)  # 校验 UUID
+    except Exception:
+        raise HTTPException(400, "无效的 document_id")
+
+    # 调用 vectorstore.get 获取所有 chunks
+    try:
+        data = kb.vectorstore.get(
+            where={"document_id": doc_id}, include=["metadatas", "documents"]
+        )
+        ids = data.get("ids", [])
+        documents = data.get("documents", [])
+        metadatas = data.get("metadatas", [])
+
+        chunks = []
+        for i in range(len(ids)):
+            chunks.append(
+                {
+                    "id": ids[i],
+                    "content": documents[i] if i < len(documents) else "",
+                    "metadata": metadatas[i] if i < len(metadatas) else {},
+                }
+            )
+
+        if not chunks:
+            raise HTTPException(404, "未找到该文档的 chunks")
+
+        return {"chunks": chunks}
+    except Exception as e:
+        raise HTTPException(500, f"获取 chunks 失败: {str(e)}")
 
 
 __all__ = ["router"]
