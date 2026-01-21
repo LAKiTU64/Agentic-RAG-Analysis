@@ -847,7 +847,7 @@
                 type: 'user_message',
                 content: content,
                 api: selectedApi,
-                intent: document.getElementById('intent-select'), // new: 传递意图
+                intent: document.getElementById('intent-select').value, // new: 传递意图
                 timestamp: new Date().toISOString()
             };
 
