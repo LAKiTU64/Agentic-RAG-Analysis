@@ -1,0 +1,567 @@
+{
+  "timestamp": "2026-01-14T11:49:11.778745",
+  "nsys_overview": {
+    "kernel_analysis": {
+      "total_kernels": 13,
+      "total_kernel_time": 0.793,
+      "avg_kernel_time": 0.061000000000000006
+    },
+    "layer_kernels_rows": [
+      {
+        "name": "void flashinfer::norm::RMSNormKernel<(unsigned int)8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)",
+        "dur_ms": 0.007
+      },
+      {
+        "name": "nvjet_hsh_128x256_64x4_2x1_v_bz_coopA_TNN",
+        "dur_ms": 0.163
+      },
+      {
+        "name": "void flashinfer::BatchQKApplyRotaryPosIdsCosSinCacheHeadParallelismKernel<(bool)0, (unsigned int)128, (unsigned int)8, (unsigned int)16, __half, long>(T5 *, T5 *, T5 *, T5 *, float *, T6 *, unsigned int, unsigned int, unsigned int, unsigned int, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long, unsigned long)",
+        "dur_ms": 0.013
+      },
+      {
+        "name": "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native::index_put_kernel_impl<at::native::OpaqueType<(int)2>>(at::TensorIterator &, c10::ArrayRef<long>, c10::ArrayRef<long>)::[lambda(char *, const char *, long) (instance 1)]>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>, const T1 &, bool)::[lambda(int) (instance 1)]>(long, T3)",
+        "dur_ms": 0.023
+      },
+      {
+        "name": "void at::native::index_elementwise_kernel<(int)128, (int)4, void at::native::gpu_index_kernel<void at::native::index_put_kernel_impl<at::native::OpaqueType<(int)2>>(at::TensorIterator &, c10::ArrayRef<long>, c10::ArrayRef<long>)::[lambda(char *, const char *, long) (instance 1)]>(at::TensorIteratorBase &, c10::ArrayRef<long>, c10::ArrayRef<long>, const T1 &, bool)::[lambda(int) (instance 1)]>(long, T3)",
+        "dur_ms": 0.025
+      },
+      {
+        "name": "void at::native::elementwise_kernel<(int)128, (int)4, void at::native::gpu_kernel_impl_nocast<at::native::direct_copy_kernel_cuda(at::TensorIteratorBase &)::[lambda() (instance 3)]::operator ()() const::[lambda() (instance 10)]::operator ()() const::[lambda(c10::Half) (instance 1)]>(at::TensorIteratorBase &, const T1 &)::[lambda(int) (instance 1)]>(int, T3)",
+        "dur_ms": 0.015
+      },
+      {
+        "name": "flash::prepare_varlen_num_blocks_kernel(int, int, int, const int *, const int *, const int *, const int *, const int *, const int *, int, int, int, int, int, cutlass::FastDivmod, cutlass::FastDivmod, int *, int *, bool)",
+        "dur_ms": 0.004
+      },
+      {
+        "name": "void cutlass::device_kernel<flash::enable_sm90_or_later<flash::FlashAttnFwdSm90<flash::CollectiveMainloopFwdSm90<(int)2, cute::tuple<cute::C<(int)1>, cute::C<(int)1>, cute::C<(int)1>>, cute::tuple<cute::C<(int)128>, cute::C<(int)128>, cute::C<(int)128>>, (int)128, cutlass::half_t, float, cutlass::arch::Sm90, (bool)1, (bool)0, (bool)0, (bool)1, (bool)1, (bool)0, (bool)0, (bool)1, (bool)1, (bool)1, (bool)0, (bool)0, cutlass::bfloat16_t>, flash::CollectiveEpilogueFwd<cute::tuple<cute::C<(int)128>, cute::C<(int)128>, cute::C<(int)128>>, cute::tuple<cute::C<(int)1>, cute::C<(int)1>, cute::C<(int)1>>, cutlass::half_t, cutlass::arch::Sm90, (int)256, (bool)1, (bool)1, (bool)0, (bool)0>, flash::VarlenDynamicPersistentTileScheduler<(int)128, (int)256, (int)128, (bool)0, (bool)1, (bool)1>>>>(T1::Params)",
+        "dur_ms": 0.045
+      },
+      {
+        "name": "nvjet_hsh_128x256_64x4_2x1_v_bz_coopA_TNN",
+        "dur_ms": 0.053
+      },
+      {
+        "name": "void flashinfer::norm::FusedAddRMSNormKernel<(unsigned int)8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)",
+        "dur_ms": 0.01
+      },
+      {
+        "name": "nvjet_hsh_192x128_64x5_1x2_h_bz_coopB_TNT",
+        "dur_ms": 0.279
+      },
+      {
+        "name": "void flashinfer::activation::act_and_mul_kernel<__half, &silu<float>>(T1 *, const T1 *, int)",
+        "dur_ms": 0.024
+      },
+      {
+        "name": "nvjet_hsh_128x256_64x4_2x1_v_bz_coopA_TNN",
+        "dur_ms": 0.132
+      }
+    ],
+    "layer_kernels_source": "/workspace/Agent/AI_Agent_Complete/sglang_analysis_b1_i1024_o1_gpu0/layer_kernels_run1_hot.json",
+    "nvtx_ranges": {
+      "Layer[0]#Run[1]": {
+        "start_ns": 9202528492,
+        "end_ns": 9278544087,
+        "duration_ns": 76015595,
+        "duration_ms": 76.015595
+      }
+    }
+  },
+  "hot_kernels_count": 13,
+  "ncu_detailed_analysis": {
+    "ncu_kernel_0_void_flashinfer__norm__RMSNormKernel__unsigned_int": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 1,
+      "gpu_utilization": {
+        "average_sm_efficiency": 61.3,
+        "max_sm_efficiency": 61.3,
+        "min_sm_efficiency": 61.3,
+        "kernels_below_50_percent": 0,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 893.88,
+          "max_bandwidth": 893.88,
+          "min_bandwidth": 893.88
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 53.2,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 46.58,
+          "kernels_low_l1_hit_rate": 1
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "L2缓存命中率低 (53.2%)"
+        }
+      ]
+    },
+    "ncu_kernel_1_nvjet_hsh_128x256_64x4_2x1_v_bz_coopA_TNN": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 0,
+      "gpu_utilization": {
+        "average_sm_efficiency": 93.71999999999998,
+        "max_sm_efficiency": 93.71999999999998,
+        "min_sm_efficiency": 93.71999999999998,
+        "kernels_below_50_percent": 0,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 866.9933333333333,
+          "max_bandwidth": 866.9933333333333,
+          "min_bandwidth": 866.9933333333333
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 71.26333333333334,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 0.0,
+          "kernels_low_l1_hit_rate": 1
+        }
+      },
+      "bottleneck_summary": []
+    },
+    "ncu_kernel_2_void_flashinfer__BatchQKApplyRotaryPosIdsCosSinCac": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 2,
+      "gpu_utilization": {
+        "average_sm_efficiency": 50.72,
+        "max_sm_efficiency": 50.72,
+        "min_sm_efficiency": 50.72,
+        "kernels_below_50_percent": 0,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 1.29,
+          "max_bandwidth": 1.29,
+          "min_bandwidth": 1.29
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 66.67,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 61.69,
+          "kernels_low_l1_hit_rate": 0
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "内存带宽利用率低 (1.3 GB/s)"
+        },
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "L2缓存命中率低 (66.7%)"
+        }
+      ]
+    },
+    "ncu_kernel_3_void_at__native__index_elementwise_kernel__int_128": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 1,
+      "gpu_utilization": {
+        "average_sm_efficiency": 67.315,
+        "max_sm_efficiency": 67.315,
+        "min_sm_efficiency": 67.315,
+        "kernels_below_50_percent": 0,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 319.20000000000005,
+          "max_bandwidth": 319.20000000000005,
+          "min_bandwidth": 319.20000000000005
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 53.91,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 37.03,
+          "kernels_low_l1_hit_rate": 1
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "L2缓存命中率低 (53.9%)"
+        }
+      ]
+    },
+    "ncu_kernel_4_void_at__native__elementwise_kernel__int_128___int": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 1,
+      "gpu_utilization": {
+        "average_sm_efficiency": 58.65,
+        "max_sm_efficiency": 58.65,
+        "min_sm_efficiency": 58.65,
+        "kernels_below_50_percent": 0,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 601.99,
+          "max_bandwidth": 601.99,
+          "min_bandwidth": 601.99
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 53.88,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 22.06,
+          "kernels_low_l1_hit_rate": 1
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "L2缓存命中率低 (53.9%)"
+        }
+      ]
+    },
+    "ncu_kernel_5_flash__prepare_varlen_num_blocks_kernel_int__int__": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 3,
+      "gpu_utilization": {
+        "average_sm_efficiency": 24.51,
+        "max_sm_efficiency": 24.51,
+        "min_sm_efficiency": 24.51,
+        "kernels_below_50_percent": 1,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 1.24,
+          "max_bandwidth": 1.24,
+          "min_bandwidth": 1.24
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 99.16,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 25.0,
+          "kernels_low_l1_hit_rate": 1
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "compute",
+          "severity": "medium",
+          "description": "SM效率过低 (24.5%)"
+        },
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "内存带宽利用率低 (1.2 GB/s)"
+        },
+        {
+          "type": "latency",
+          "severity": "medium",
+          "description": "占用率效率低 (45.7%)"
+        }
+      ]
+    },
+    "ncu_kernel_6_void_cutlass__device_kernel_flash__enable_sm90_or_": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 1,
+      "gpu_utilization": {
+        "average_sm_efficiency": 37.33,
+        "max_sm_efficiency": 37.33,
+        "min_sm_efficiency": 37.33,
+        "kernels_below_50_percent": 1,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 557.43,
+          "max_bandwidth": 557.43,
+          "min_bandwidth": 557.43
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 64.43,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 1.47,
+          "kernels_low_l1_hit_rate": 1
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "L2缓存命中率低 (64.4%)"
+        }
+      ]
+    },
+    "ncu_kernel_7_void_flashinfer__norm__FusedAddRMSNormKernel__unsi": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 2,
+      "gpu_utilization": {
+        "average_sm_efficiency": 46.94,
+        "max_sm_efficiency": 46.94,
+        "min_sm_efficiency": 46.94,
+        "kernels_below_50_percent": 1,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 1.26,
+          "max_bandwidth": 1.26,
+          "min_bandwidth": 1.26
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 52.07,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 53.815,
+          "kernels_low_l1_hit_rate": 0
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "内存带宽利用率低 (1.3 GB/s)"
+        },
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "L2缓存命中率低 (52.1%)"
+        }
+      ]
+    },
+    "ncu_kernel_8_nvjet_hsh_192x128_64x5_1x2_h_bz_coopB_TNT": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 2,
+      "gpu_utilization": {
+        "average_sm_efficiency": 93.99,
+        "max_sm_efficiency": 93.99,
+        "min_sm_efficiency": 93.99,
+        "kernels_below_50_percent": 0,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 1.27,
+          "max_bandwidth": 1.27,
+          "min_bandwidth": 1.27
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 69.47,
+          "kernels_low_l2_hit_rate": 0
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 0.0,
+          "kernels_low_l1_hit_rate": 1
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "内存带宽利用率低 (1.3 GB/s)"
+        },
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "L2缓存命中率低 (69.5%)"
+        }
+      ]
+    },
+    "ncu_kernel_9_void_flashinfer__activation__act_and_mul_kernel___": {
+      "kernels_analyzed": 1,
+      "bottlenecks_found": 2,
+      "gpu_utilization": {
+        "average_sm_efficiency": 47.91,
+        "max_sm_efficiency": 47.91,
+        "min_sm_efficiency": 47.91,
+        "kernels_below_50_percent": 1,
+        "total_kernels": 1
+      },
+      "memory_analysis": {
+        "bandwidth_stats": {
+          "average_bandwidth": 2.26,
+          "max_bandwidth": 2.26,
+          "min_bandwidth": 2.26
+        },
+        "l2_cache_stats": {
+          "average_l2_hit_rate": 39.98,
+          "kernels_low_l2_hit_rate": 1
+        },
+        "l1_cache_stats": {
+          "average_l1_hit_rate": 21.73,
+          "kernels_low_l1_hit_rate": 1
+        }
+      },
+      "bottleneck_summary": [
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "内存带宽利用率低 (2.3 GB/s)"
+        },
+        {
+          "type": "memory",
+          "severity": "medium",
+          "description": "L2缓存命中率低 (40.0%)"
+        }
+      ]
+    }
+  },
+  "ncu_focus_analysis": {},
+  "roofline_estimate": {
+    "hardware": "nvidia_H800_SXM5_80G",
+    "precision_bits": {
+      "w": 16,
+      "a": 16,
+      "kv": 16
+    },
+    "model": {
+      "hidden_size": 4096,
+      "num_layers": 1,
+      "num_attention_heads": 32,
+      "num_key_value_heads": 32,
+      "intermediate_size": 11008,
+      "vocab_size": 32000
+    },
+    "params": {
+      "batch_size": 1,
+      "prompt_len": 1024,
+      "output_len": 1,
+      "use_flashattention": false
+    },
+    "prefill": {
+      "OPs": 700322938880.0,
+      "load_weight": 666894336.0,
+      "load_act": 274202624.0,
+      "store_act": 320339968.0,
+      "load_kv_cache": 16777216.0,
+      "store_kv_cache": 16777216.0,
+      "bandwidth": 3350000000000.0,
+      "max_ops": 989500000000000.0,
+      "memory_access": 1294991360.0,
+      "arithmetic_intensity": 540.7935222672065,
+      "performance": 989500000000000.0,
+      "bound": "compute",
+      "inference_time": 0.0007077543596563921
+    },
+    "decode": {
+      "OPs": 683909120.0,
+      "load_weight": 666894336.0,
+      "load_act": 267776.0,
+      "store_act": 312832.0,
+      "load_kv_cache": 16777216.0,
+      "store_kv_cache": 16384.0,
+      "bandwidth": 3350000000000.0,
+      "max_ops": 989500000000000.0,
+      "memory_access": 684268544.0,
+      "arithmetic_intensity": 0.9994747325400947,
+      "performance": 3348240354009.317,
+      "bound": "memory",
+      "inference_time": 0.00020425926686567166,
+      "total_ops": 683909120.0,
+      "total_memory": 684268544.0,
+      "total_time": 0.00020425926686567166
+    },
+    "overall": {
+      "bandwidth": 3350000000000.0,
+      "max_ops": 989500000000000.0,
+      "memory_access": 1979259904.0,
+      "arithmetic_intensity": 354.1762486994735,
+      "performance": 989500000000000.0,
+      "bound": "compute",
+      "inference_time": 0.0009120136265220638,
+      "total_ops": 701006848000.0,
+      "total_memory": 1979259904.0
+    },
+    "observed": {
+      "hardware": "nvidia_H800_SXM5_80G",
+      "precision_bits": {
+        "w": 16,
+        "a": 16,
+        "kv": 16
+      },
+      "sources": 10,
+      "kernel_count": 10,
+      "aggregated_duration_weight": 548.1333333333333,
+      "total_duration_us": 548.1333333333333,
+      "total_duration_ms": 0.5481333333333334,
+      "avg_sm_efficiency": 81.26563860678665,
+      "avg_dram_throughput_gbps": 280.21463344279573,
+      "observed_compute_flops": 804123494014153.9,
+      "observed_compute_tops": 804.1234940141538,
+      "observed_memory_throughput_bytes": 280214633442.7958,
+      "observed_memory_throughput_gbps": 280.21463344279573,
+      "observed_arithmetic_intensity": 2869.669881741958,
+      "compute_utilization": 0.8126563860678666,
+      "memory_utilization": 0.08364615923665543,
+      "peak_compute_flops": 989500000000000.0,
+      "peak_memory_bandwidth": 3350000000000.0,
+      "turning_point_intensity": 295.3731343283582,
+      "inferred_bound": "compute"
+    },
+    "comparison": {
+      "predicted_performance": 989500000000000.0,
+      "observed_performance": 804123494014153.9,
+      "performance_gap_ratio": -0.18734361393213353,
+      "predicted_arithmetic_intensity": 354.1762486994735,
+      "observed_arithmetic_intensity": 2869.669881741958,
+      "arithmetic_intensity_gap_ratio": 7.102378102087069,
+      "predicted_bound": "compute",
+      "observed_bound": "compute",
+      "bound_alignment": "match",
+      "observed_compute_utilization": 0.8126563860678666,
+      "observed_memory_utilization": 0.08364615923665543,
+      "peak_compute_flops": 989500000000000.0,
+      "peak_memory_bandwidth": 3350000000000.0,
+      "predicted_memory_bytes": 2793806766075.9854,
+      "observed_memory_bytes": 280214633442.7958,
+      "memory_gap_ratio": -0.8997014980258035
+    }
+  },
+  "roofline_observed": {
+    "hardware": "nvidia_H800_SXM5_80G",
+    "precision_bits": {
+      "w": 16,
+      "a": 16,
+      "kv": 16
+    },
+    "sources": 10,
+    "kernel_count": 10,
+    "aggregated_duration_weight": 548.1333333333333,
+    "total_duration_us": 548.1333333333333,
+    "total_duration_ms": 0.5481333333333334,
+    "avg_sm_efficiency": 81.26563860678665,
+    "avg_dram_throughput_gbps": 280.21463344279573,
+    "observed_compute_flops": 804123494014153.9,
+    "observed_compute_tops": 804.1234940141538,
+    "observed_memory_throughput_bytes": 280214633442.7958,
+    "observed_memory_throughput_gbps": 280.21463344279573,
+    "observed_arithmetic_intensity": 2869.669881741958,
+    "compute_utilization": 0.8126563860678666,
+    "memory_utilization": 0.08364615923665543,
+    "peak_compute_flops": 989500000000000.0,
+    "peak_memory_bandwidth": 3350000000000.0,
+    "turning_point_intensity": 295.3731343283582,
+    "inferred_bound": "compute"
+  }
+}

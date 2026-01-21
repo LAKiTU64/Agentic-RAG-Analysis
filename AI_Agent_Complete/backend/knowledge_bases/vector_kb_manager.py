@@ -1,5 +1,4 @@
 import os
-
 import shutil
 import sys
 import uuid
@@ -9,7 +8,7 @@ from typing import Any, Dict, List, Optional
 
 from langchain_chroma import Chroma
 from chromadb.config import Settings
-from langchain_community.document_loaders import TextLoader
+from langchain_community.document_loaders import TextLoader, JSONLoader
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import torch
@@ -41,7 +40,8 @@ CHUNKING_STRATEGY = {
             " ",
             "",
         ],
-    }
+    },
+    "json": {},
 }
 
 
@@ -94,11 +94,13 @@ class VectorKBManager:
             client_settings=Settings(anonymized_telemetry=False),  # 禁用遥测
         )
 
-    def _get_loader(self, file_path: str) -> TextLoader:
+    def _get_loader(self, file_path: str) -> TextLoader | JSONLoader:
         """根据文件类型，返回对应的 Loader 对象，支持 txt/md"""
         ext = file_path.split(".")[-1].lower()
         if ext in ("txt", "md"):
             return TextLoader(file_path, encoding="utf-8")
+        elif ext == "json":
+            return JSONLoader(file_path)
         else:
             raise ValueError(f"不支持该文件类型：.{ext}")
 
@@ -183,18 +185,21 @@ class VectorKBManager:
         try:
             loader = self._get_loader(file_path)
             docs = loader.load()
+            ext = file_path.split(".")[-1].lower()
 
             # 配置分块策略
-            strategy_name = "default"
-            strategy = CHUNKING_STRATEGY[strategy_name]
-
-            text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=strategy["chunk_size"],
-                chunk_overlap=strategy["chunk_overlap"],
-                add_start_index=strategy["add_start_index"],
-                separators=strategy["separators"],
-            )
-            splits = text_splitter.split_documents(docs)
+            if ext == "json":
+                splits = docs
+            elif ext == "md" or ext == "txt":
+                strategy_name = "default"
+                strategy = CHUNKING_STRATEGY[strategy_name]
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=strategy["chunk_size"],
+                    chunk_overlap=strategy["chunk_overlap"],
+                    add_start_index=strategy["add_start_index"],
+                    separators=strategy["separators"],
+                )
+                splits = text_splitter.split_documents(docs)
 
             # 写入统一元数据
             for split in splits:
