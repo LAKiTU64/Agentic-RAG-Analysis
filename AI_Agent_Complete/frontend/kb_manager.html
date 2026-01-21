@@ -604,7 +604,9 @@
                 data.chunks.forEach((chunk, idx) => {
                     const div = document.createElement('div');
                     div.className = 'chunk-item';
-                    const startIdx = chunk.metadata.start_index || 'N/A';
+                    const startIdx = Number.isInteger(chunk.metadata.start_index)
+                        ? chunk.metadata.start_index
+                        : 'N/A';
                     div.innerHTML = `
         <div class="chunk-header">Chunk #${idx + 1} (ID: ${chunk.id.substring(0, 8)}...)</div>
         <div><strong>起始位置:</strong> ${startIdx}</div>

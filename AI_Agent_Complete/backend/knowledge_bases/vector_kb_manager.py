@@ -44,6 +44,19 @@ CHUNKING_STRATEGY = {
     "json": {},
 }
 
+# 定义哪些字段是 chunk 级别，不应出现在文档元数据中
+CHUNK_LEVEL_KEYS = {
+    "start_index",
+    "end_index",
+    "chunk_id",
+    "char_start",
+    "char_end",
+    "page_number",  # 如果使用
+    "section_title",  # 如果使用
+    "vector",  # 如果包含
+    "embedding",  # 如果包含
+}
+
 
 class VectorKBManager:
     """
@@ -98,9 +111,14 @@ class VectorKBManager:
         """根据文件类型，返回对应的 Loader 对象，支持 txt/md"""
         ext = file_path.split(".")[-1].lower()
         if ext in ("txt", "md"):
-            return TextLoader(file_path, encoding="utf-8")
+            return TextLoader(file_path=file_path, encoding="utf-8")
         elif ext == "json":
-            return JSONLoader(file_path)
+            # 目前预留json的入口，但无法保证切片结构是正确的
+            return JSONLoader(
+                file_path=file_path,
+                jq_schema=".",
+                text_content=False,
+            )
         else:
             raise ValueError(f"不支持该文件类型：.{ext}")
 
@@ -333,7 +351,7 @@ class VectorKBManager:
         }
 
     def get_document_metadata(self, document_id: str) -> Dict[str, Any]:
-        """返回该 document_id 的一份代表性元数据（用于前端编辑展示）"""
+        """返回该 document_id 的文档级元数据（用于前端编辑展示）"""
         assert self.vectorstore is not None
         try:
             uuid.UUID(document_id)
@@ -347,9 +365,14 @@ class VectorKBManager:
             metas = data.get("metadatas", []) or []
             if not metas:
                 return {"ok": False, "error": "document not found"}
-            # 取第一条chunk的元数据作为代表（正常情况下同一文档的chunk元数据应一致）
-            meta = metas[0]
-            return {"ok": True, "document_id": document_id, "metadata": meta}
+
+            # 取第一条 chunk 的元数据作为基础
+            raw_meta = metas[0]
+
+            # 过滤掉 chunk 专属字段，只保留文档级字段
+            doc_meta = {k: v for k, v in raw_meta.items() if k not in CHUNK_LEVEL_KEYS}
+
+            return {"ok": True, "document_id": document_id, "metadata": doc_meta}
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
@@ -536,3 +559,16 @@ if __name__ == "__main__":
         print(
             f" - score={doc.metadata.get('score')}, accuracy={doc.metadata.get('accuracy')}"
         )
+
+    # Step 7: 检查第一个文档的第一个 chunk 的 start_index
+    print("\nStep 7: 检查第一个 chunk 的 start_index\n")
+    overview = kb.get_overview()
+    if overview["documents"]:
+        first_doc_id = overview["documents"][0]["document_id"]
+        data = kb.vectorstore.get(
+            where={"document_id": first_doc_id}, include=["metadatas"]
+        )
+        first_meta = data["metadatas"][0]
+        print("First chunk metadata:", first_meta)
+        print("start_index type:", type(first_meta.get("start_index")))
+        print("start_index value:", repr(first_meta.get("start_index")))
