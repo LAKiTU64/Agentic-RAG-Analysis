@@ -45,12 +45,13 @@ CHUNKING_STRATEGY = {
 }
 
 # 定义哪些字段是 chunk 级别，不应出现在文档元数据中
-CHUNK_LEVEL_KEYS = {
+CHUNK_LEVEL_METADATA_KEYS = {
     "start_index",
     "end_index",
     "chunk_id",
     "char_start",
     "char_end",
+    "seq_num",  # json文件入库会有这个metadata
     "page_number",  # 如果使用
     "section_title",  # 如果使用
     "vector",  # 如果包含
@@ -370,7 +371,7 @@ class VectorKBManager:
             raw_meta = metas[0]
 
             # 过滤掉 chunk 专属字段，只保留文档级字段
-            doc_meta = {k: v for k, v in raw_meta.items() if k not in CHUNK_LEVEL_KEYS}
+            doc_meta = {k: v for k, v in raw_meta.items() if k not in CHUNK_LEVEL_METADATA_KEYS}
 
             return {"ok": True, "document_id": document_id, "metadata": doc_meta}
         except Exception as e:
