@@ -1,4 +1,5 @@
 import os
+import pathlib
 import shutil
 import sys
 import uuid
@@ -69,6 +70,7 @@ class VectorKBManager:
         kb_config = config.get("vector_store", {})
         self.embedding_model_path = kb_config.get("embedding_model_path")
         self.persist_directory = kb_config.get("persist_directory")
+        self.file_store_directory = kb_config.get("file_store_directory")
         self.chunk_size = kb_config.get("chunk_size")
         self.chunk_overlap = kb_config.get("chunk_overlap")
         self.default_search_k = kb_config.get("default_search_k", 8)
@@ -79,6 +81,9 @@ class VectorKBManager:
             raise FileNotFoundError(
                 f"❌ 找不到本地模型目录: {self.embedding_model_path}。请确保模型已下载到该位置。"
             )
+
+        # 创建上传文件目录
+        os.makedirs(self.file_store_directory, exist_ok=True)
 
         # 初始化 Embedding：强制开启 local_files_only，禁止联网下载 embedding 模型；增加 CUDA 环境的支持
         self.embeddings = HuggingFaceEmbeddings(
@@ -131,6 +136,40 @@ class VectorKBManager:
                 sha256.update(chunk)
         return sha256.hexdigest()
 
+    def _save_uploaded_file(
+        self,
+        src_path: str,
+        *,
+        document_id: str,
+        filename: str,
+        overwrite: bool = False,
+    ) -> Dict[str, str]:
+        """
+        保存原始文件用于预览/下载
+        返回：
+        - saved_path: 文件绝对路径
+        - rel_path: 相对 file_store_directory 的路径（更适合给前端/接口返回）
+        """
+
+        doc_dir = os.path.join(self.file_store_directory, document_id)
+        os.makedirs(doc_dir, exist_ok=True)
+
+        # 做一次基本的文件名清理，避免奇怪路径（最简单版本）
+        safe_name = os.path.basename(filename)
+
+        dst_path = os.path.join(doc_dir, safe_name)
+
+        if os.path.exists(dst_path) and not overwrite:
+            # 若不允许覆盖，就做一个不冲突名字
+            stem = pathlib.Path(safe_name).stem
+            suffix = pathlib.Path(safe_name).suffix
+            dst_path = os.path.join(doc_dir, f"{stem}_{uuid.uuid4().hex[:8]}{suffix}")
+
+        shutil.copy2(src_path, dst_path)
+
+        rel_path = os.path.relpath(dst_path, self.file_store_directory)
+        return {"saved_path": dst_path, "rel_path": rel_path}
+
     def add_document(
         self,
         file_path: str,
@@ -139,6 +178,8 @@ class VectorKBManager:
         chunking_strategy: Optional[str] = None,
         runtime_info: Optional[Dict[str, Any]] = None,
         override_filename: Optional[str] = None,
+        save_file: bool = True,
+        overwrite_saved_file: bool = True,
     ) -> Dict[str, Any]:
         """
         导入文档到向量库（切片后入库）。
@@ -149,6 +190,8 @@ class VectorKBManager:
         - chunking_strategy: 可选，指定分块策略，默认策略default，后续将会维护其他策略
         - runtime_info: 可选，传入的sglang运行时元数据字典，写入每个 chunk 的 metadata 中
         - override_filename: 可选，覆盖文件名（用于前端展示）
+        - save_file: 可选，是否保存原始文件（用于预览/下载）
+        - overwrite_saved_file: 可选，是否覆盖保存的已保存文件（用于更新）
 
         返回：
         - 结构化结果，便于 Web/接口层使用
@@ -201,6 +244,31 @@ class VectorKBManager:
                     "error": f"failed to delete old chunks: {delete_error}",
                 }
 
+        # 保存原始文件（用于预览/下载）
+        saved_file_info: Optional[Dict[str, str]] = None
+        if save_file:
+            try:
+                # 如果是更新文档：先清空旧文件目录，避免旧文件残留
+                if overwrite_document_id:
+                    doc_dir = os.path.join(self.file_store_directory, doc_uuid)
+                    if os.path.exists(doc_dir):
+                        shutil.rmtree(doc_dir)
+                    os.makedirs(doc_dir, exist_ok=True)
+
+                saved_file_info = self._save_uploaded_file(
+                    file_path,
+                    document_id=doc_uuid,
+                    filename=filename,
+                    overwrite=overwrite_saved_file if overwrite_document_id else False,
+                )
+            except Exception as e:
+                return {
+                    "ok": False,
+                    "document_id": doc_uuid,
+                    "filename": filename,
+                    "error": f"save file failed: {str(e)}",
+                }
+
         try:
             loader = self._get_loader(file_path)
             docs = loader.load()
@@ -210,8 +278,10 @@ class VectorKBManager:
             if ext == "json":
                 splits = docs
             elif ext == "md" or ext == "txt":
-                strategy_name = "default"
-                strategy = CHUNKING_STRATEGY[strategy_name]
+                strategy_name = chunking_strategy or "default"
+                strategy = (
+                    CHUNKING_STRATEGY.get(strategy_name) or CHUNKING_STRATEGY["default"]
+                )
                 text_splitter = RecursiveCharacterTextSplitter(
                     chunk_size=strategy["chunk_size"],
                     chunk_overlap=strategy["chunk_overlap"],
@@ -228,6 +298,9 @@ class VectorKBManager:
                         "doc_hash": doc_hash,  # 内容哈希
                         "filename": filename,  # 文件名
                         "add_time": add_time,  # 添加时间
+                        "saved_file_relpath": saved_file_info["rel_path"]
+                        if saved_file_info
+                        else None,  # 原始文件保存路径（相对 file_store_dir）
                     }
                 )
                 # 写入runtime_info元数据（如果有）
@@ -243,6 +316,9 @@ class VectorKBManager:
                 "filename": filename,
                 "chunk_count": len(splits),
                 "add_time": add_time,
+                "saved_file_relpath": saved_file_info["rel_path"]
+                if saved_file_info
+                else None,
             }
 
         except Exception as e:
@@ -261,11 +337,27 @@ class VectorKBManager:
         except Exception:
             return {"ok": False, "error": "document_id is not a valid UUID"}
 
+        # 1) 先删除向量库（主流程）
         try:
             self.vectorstore.delete(where={"document_id": document_id})
-            return {"ok": True, "document_id": document_id}
         except Exception as e:
             return {"ok": False, "document_id": document_id, "error": str(e)}
+
+        # 2) 再删除upload_files中的文档（辅助流程：失败不影响主结果）
+        warnings: List[str] = []
+        try:
+            doc_dir = os.path.join(
+                self.file_store_directory, document_id
+            )  # 注意这里用你现在的字段名
+            if os.path.exists(doc_dir):
+                shutil.rmtree(doc_dir)
+        except Exception as e:
+            warnings.append(f"failed to delete saved files: {str(e)}")
+
+        res: Dict[str, Any] = {"ok": True, "document_id": document_id}
+        if warnings:
+            res["warnings"] = warnings
+        return res
 
     def search(
         self,
@@ -371,7 +463,9 @@ class VectorKBManager:
             raw_meta = metas[0]
 
             # 过滤掉 chunk 专属字段，只保留文档级字段
-            doc_meta = {k: v for k, v in raw_meta.items() if k not in CHUNK_LEVEL_METADATA_KEYS}
+            doc_meta = {
+                k: v for k, v in raw_meta.items() if k not in CHUNK_LEVEL_METADATA_KEYS
+            }
 
             return {"ok": True, "document_id": document_id, "metadata": doc_meta}
         except Exception as e:
