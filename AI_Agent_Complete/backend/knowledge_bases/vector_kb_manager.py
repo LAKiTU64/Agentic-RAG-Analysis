@@ -414,6 +414,57 @@ class VectorKBManager:
 
         return results
 
+    def find_documents_by_metadata(
+        self, where_filter: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
+        """
+        根据元数据 Filter 精确查找文档 (不进行向量相似度计算)。
+        会自动处理多条件查询的 $and 封装。
+        """
+        assert self.vectorstore is not None
+
+        if not where_filter:
+            return []
+
+        # [Fix] Chroma语法修正: 如果有多个过滤条件，必须使用 $and 包裹
+        final_where = where_filter
+        if len(where_filter) > 1:
+            # 将 {'a': 1, 'b': 2} 转换为 {'$and': [{'a': 1}, {'b': 2}]}
+            and_list = [{k: v} for k, v in where_filter.items()]
+            final_where = {"$and": and_list}
+
+        # 1. 直接查询数据库
+        try:
+            # print(f"[KB Manager] Querying with where: {final_where}") # Debug
+            results = self.vectorstore.get(where=final_where, include=["metadatas"])
+        except Exception as e:
+            print(f"[VectorKBManager] Metadata query failed: {e}")
+            return []
+
+        raw_metadatas = results.get("metadatas", []) or []
+
+        # 2. 聚合去重: chunk -> document
+        unique_docs: Dict[str, Dict[str, Any]] = {}
+
+        for meta in raw_metadatas:
+            if not meta:
+                continue
+            doc_id = meta.get("document_id")
+            if not doc_id:
+                continue
+
+            if doc_id not in unique_docs:
+                clean_meta = {
+                    k: v for k, v in meta.items() if k not in CHUNK_LEVEL_METADATA_KEYS
+                }
+                unique_docs[doc_id] = clean_meta
+
+        # 3. 排序返回
+        docs_list = list(unique_docs.values())
+        docs_list.sort(key=lambda x: x.get("add_time", ""), reverse=True)
+
+        return docs_list
+
     def get_overview(self) -> Dict[str, Any]:
         """
         知识库概览：返回切片数、文档数、文档元数据

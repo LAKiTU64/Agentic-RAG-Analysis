@@ -479,46 +479,124 @@ class AIAgent:
         try:
             response = """✅ **已解析您的请求**\n"""
 
-            # Step 1: 解析分析参数（model + kwargs）
+            # Step 1: 解析分析参数
             parsed_raw = await self._parse_raw_params(message)
             parsed = self._finalize_params_for_analysis(parsed_raw)
-            print(parsed)
 
             model_name = parsed.get("model")
             params = parsed.get("params", {})
             analysis_type = parsed.get("analysis_type", None)
 
-            response += f"🤖 **模型**: {model_name or '未指定'}\n🔬 **分析类型**: {analysis_type or '自动 (默认nsys+ncu)'}\n📊 **参数**: {json.dumps(params, ensure_ascii=False)}\n\n"
+            response += f"🤖 **模型**: {model_name or '未指定'}\n🔬 **分析类型**: {analysis_type or '自动 (默认nsys+ncu)'}\n📊 **参数**: {json.dumps(params, ensure_ascii=False)}\n"
 
             # Step 2: 解析模型路径
             if not model_name or model_name not in self.model_mappings:
                 available = ", ".join(self.model_mappings.keys())
                 return (
                     response
-                    + f"❌ **分析失败**: 未指定模型或模型不可用，请检查config.json。可用模型：{available}"
+                    + f"\n❌ **分析失败**: 未指定模型或模型不可用，请检查config.json。可用模型：{available}"
                 )
 
             model_path = self._resolve_model_path(model_name)
             if not model_path:
                 return (
                     response
-                    + "❌ **分析失败**: 模型在config.json的映射表内，但模型路径解析失败。"
+                    + "\n❌ **分析失败**: 模型在config.json的映射表内，但模型路径解析失败。"
                 )
 
-            # Step 3: 将模型运行参数缓存到pending_analysis，以便二次确认
+            # =========================================================================
+            # [Step 2.5] 检查知识库是否有匹配的历史文档
+            # =========================================================================
+            matching_docs_msg = ""
+            try:
+                # 使用 parsed_raw (用户原始输入) 以避免默认值干扰
+                user_specified_params = parsed_raw.get("params", {}) or {}
+
+                # 1. 构造 Filter
+                strict_filter = {}
+                loose_filter = {}
+
+                if model_name:
+                    strict_filter["model"] = model_name
+                    loose_filter["model"] = model_name
+
+                for k in ["batch_size", "input_len", "output_len"]:
+                    if (
+                        k in user_specified_params
+                        and user_specified_params[k] is not None
+                    ):
+                        strict_filter[k] = user_specified_params[k]
+
+                # 2. 执行查询
+                found_docs = []
+                match_type = "strict"
+
+                print(f"[KB Debug] 尝试严格匹配 Filter (Raw): {strict_filter}")
+                if strict_filter:
+                    found_docs = self.kb.find_documents_by_metadata(strict_filter)
+
+                if not found_docs and loose_filter and loose_filter != strict_filter:
+                    print(f"[KB Debug] 降级尝试宽泛匹配 Filter: {loose_filter}")
+                    found_docs = self.kb.find_documents_by_metadata(loose_filter)
+                    match_type = "loose"
+
+                print(f"[KB Debug] 命中数量: {len(found_docs)}")
+
+                # 3. 构造返回消息
+                if found_docs:
+                    links = []
+                    for doc in found_docs:
+                        d_id = doc.get("document_id")
+                        d_name = (
+                            doc.get("filename") or doc.get("title") or f"Doc-{d_id[:6]}"
+                        )
+                        # 构造前端 <doc-link> 标签
+                        display_name = (
+                            d_name if match_type == "strict" else f"{d_name} (同模型)"
+                        )
+                        links.append(
+                            f'<doc-link id="{d_id}" title="{d_name}">{display_name}</doc-link>'
+                        )
+
+                    display_links = links[:3]
+                    intro = (
+                        "🎯 **发现完全匹配参数的历史报告** (推荐直接查看):"
+                        if match_type == "strict"
+                        else f"📂 **未找到参数完全匹配的记录，但发现同模型({model_name})的相关文档**:"
+                    )
+
+                    matching_docs_msg = f"\n\n{intro}\n" + "\n".join(
+                        [f"• {link}" for link in display_links]
+                    )
+                    if len(links) > 3:
+                        matching_docs_msg += f"\n*(...及其他 {len(links) - 3} 个)*"
+                else:
+                    matching_docs_msg = f"\n\n📂 **知识库检索**: 未找到关于 `{model_name}` 的历史分析报告。"
+
+            except Exception as e:
+                print(f"[_agent_analysis] Metadata search error: {e}")
+                # 出错不影响主流程
+            # =========================================================================
+
+            # Step 3: 缓存任务状态
             self.pending_analysis = {
                 "model_path": model_path,
                 "params": params,
                 "analysis_type": analysis_type,
             }
 
+            # [关键修正] 必须把 matching_docs_msg 拼接到返回值里！
             return (
                 response
-                + "👉 **输入 y/Y 执行性能分析，输入其他字符取消**\n⚠️ **注意**: 性能分析可能耗时较长（3-10分钟）。\n"
+                + matching_docs_msg
+                + "\n\n👉 **输入 y/Y 执行性能分析，输入其他字符取消**\n⚠️ **注意**: 性能分析可能耗时较长（3-10分钟）。\n"
             )
 
         except Exception as e:
-            return response + f"❌ **分析执行异常**: {str(e)}"
+            import traceback
+
+            traceback.print_exc()
+            return response + f"\n❌ **分析执行异常**: {str(e)}"
 
     async def _agent_rag_qa(self, message: str) -> str:
         """

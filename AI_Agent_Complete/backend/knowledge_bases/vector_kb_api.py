@@ -227,7 +227,12 @@ async def get_document_content(request: Request, doc_id: str):
     display_filename = meta_result["metadata"].get("filename") or os.path.basename(
         rel_path
     )
-    return {"filename": display_filename, "content": content}
+    # [修改] 返回增加 metadata 字段
+    return {
+        "filename": display_filename,
+        "content": content,
+        "metadata": meta_result["metadata"],  # <--- 新增这一行
+    }
 
 
 __all__ = ["router"]
