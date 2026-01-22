@@ -163,7 +163,7 @@ async def download_document_file(request: Request, doc_id: str):
     except Exception:
         raise HTTPException(400, "无效的 document_id")
 
-    # 获取文档元数据，从中提取 saved_file_relpath
+    # 获取文档元数据
     meta_result = kb.get_document_metadata(doc_id)
     if not meta_result["ok"]:
         raise HTTPException(404, "文档不存在或未保存源文件")
@@ -176,12 +176,17 @@ async def download_document_file(request: Request, doc_id: str):
     if not os.path.exists(full_path):
         raise HTTPException(404, "源文件已丢失")
 
-    filename = os.path.basename(rel_path)
-    media_type = _get_media_type_for_preview(filename)
+    # 关键修改：使用 metadata 中的 'filename' 作为下载文件名
+    filename_to_serve = meta_result["metadata"].get("filename") or os.path.basename(
+        rel_path
+    )
 
+    media_type = _get_media_type_for_preview(
+        filename_to_serve
+    )  # 注意：这里用逻辑名判断 MIME（可接受）
     return FileResponse(
         path=full_path,
-        filename=filename,  # 前端下载时显示原始文件名
+        filename=filename_to_serve,  # 这是核心！
         media_type=media_type,
     )
 
@@ -219,7 +224,10 @@ async def get_document_content(request: Request, doc_id: str):
     except UnicodeDecodeError:
         raise HTTPException(400, "文件不是有效的文本格式")
 
-    return {"filename": os.path.basename(rel_path), "content": content}
+    display_filename = meta_result["metadata"].get("filename") or os.path.basename(
+        rel_path
+    )
+    return {"filename": display_filename, "content": content}
 
 
 __all__ = ["router"]
