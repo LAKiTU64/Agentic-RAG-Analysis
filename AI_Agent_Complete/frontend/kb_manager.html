@@ -350,18 +350,6 @@
             z-index: 2000;
         }
 
-        .chunk-content {
-            background: white;
-            padding: 16px;
-            border-radius: 16px;
-            width: 100%;
-            max-width: 1120px;
-            max-height: 86vh;
-            overflow-y: auto;
-            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
-            border: 1px solid rgba(44, 62, 80, 0.12);
-        }
-
         .modal-header {
             display: flex;
             justify-content: space-between;
@@ -370,6 +358,11 @@
             padding-bottom: 10px;
             border-bottom: 1px solid rgba(44, 62, 80, 0.08);
             margin-bottom: 12px;
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #ffffff;
+            padding-top: 12px;
         }
 
         .modal-title {
@@ -424,6 +417,61 @@
             font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
             line-height: 1.6;
         }
+
+
+        /* 新的弹窗壳层：header + body 分离 */
+        .modal-shell {
+            background: #fff;
+            width: 100%;
+            max-width: 1120px;
+            max-height: 86vh;
+            border-radius: 16px;
+            box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22);
+            border: 1px solid rgba(44, 62, 80, 0.12);
+
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            /* 关键：保证圆角内不会被 body 滚动内容撑破 */
+        }
+
+        /* 头部固定，不参与滚动 */
+        .modal-header {
+            flex: 0 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+
+            padding: 14px 16px;
+            border-bottom: 1px solid rgba(44, 62, 80, 0.08);
+            background: #fff;
+        }
+
+        /* 内容区滚动 */
+        .modal-body {
+            flex: 1 1 auto;
+            overflow-y: auto;
+            padding: 16px;
+        }
+
+        /* 关闭按钮更像按钮（替代 span） */
+        .close-modal {
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            font-size: 24px;
+            font-weight: bold;
+            color: #334155;
+            padding: 2px 10px;
+            border-radius: 10px;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            background: rgba(44, 62, 80, 0.08);
+        }
+
 
         /* Markdown 渲染样式（保留并稍作对齐） */
         #sourceContent h1,
@@ -592,7 +640,7 @@
 <body>
     <div class="topbar">
         <div class="topbar-left">
-            <a href="/chat" class="back-btn">← 返回聊天</a>
+            <a href="/chat" class="back-btn">⬅ 返回Chat</a>
             <div class="topbar-title">
                 <h1>🧠 知识库管理</h1>
                 <p>上传文档让AI助手更了解你的知识</p>
@@ -645,27 +693,33 @@
 
     <!-- chunk预览 -->
     <div class="chunk-modal" id="chunkModal">
-        <div class="chunk-content">
+        <div class="modal-shell">
             <div class="modal-header">
                 <div class="modal-title" id="modalTitle">Chunks 预览</div>
-                <span class="close-modal" onclick="closeChunkModal()">&times;</span>
+                <button class="close-modal" type="button" onclick="closeChunkModal()">&times;</button>
             </div>
-            <div id="chunkList"></div>
+            <div class="modal-body">
+                <div id="chunkList"></div>
+            </div>
         </div>
     </div>
 
+
     <!-- 源文件预览 -->
     <div class="chunk-modal" id="sourceModal">
-        <div class="chunk-content">
+        <div class="modal-shell">
             <div class="modal-header">
                 <div class="modal-title" id="sourceModalTitle">源文件预览</div>
-                <span class="close-modal" onclick="closeSourceModal()">&times;</span>
+                <button class="close-modal" type="button" onclick="closeSourceModal()">&times;</button>
             </div>
-            <div id="sourceContent"
-                style="padding:12px; border-radius:12px; margin-top:10px; overflow:auto; line-height:1.6; background:#fff; border:1px solid rgba(44,62,80,0.10);">
+            <div class="modal-body">
+                <div id="sourceContent"
+                    style="padding:12px; border-radius:12px; line-height:1.6; background:#fff; border:1px solid rgba(44,62,80,0.10);">
+                </div>
             </div>
         </div>
     </div>
+
 
     <!-- Metadata Modal -->
     <div id="meta-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.4); z-index:3000;">
@@ -803,9 +857,9 @@
                             </div>
                         </div>
                         <div class="actions">
-                            <button class="btn" onclick="viewSourceFile('${doc.document_id}', '${doc.filename || ''}')">查看源文件</button>
-                            <button class="btn" onclick="downloadSourceFile('${doc.document_id}')">下载</button>
+                            <button class="btn" onclick="viewSourceFile('${doc.document_id}', '${doc.filename || ''}')">预览源文件</button>
                             <button class="btn" onclick="viewChunks('${doc.document_id}')">查看Chunks</button>
+                            <button class="btn" onclick="downloadSourceFile('${doc.document_id}')">下载</button>
                             <button class="btn-edit" onclick="openMetadataModal('${doc.document_id}', '${doc.filename || ''}')">修改元数据</button>
                             <button class="btn btn-delete" onclick="deleteDocument('${doc.document_id}')">删除</button>
                         </div>
@@ -817,7 +871,7 @@
             }
         }
 
-        const protectedKeys = new Set(["document_id", "doc_hash", "add_time"]);
+        const protectedKeys = new Set(["document_id", "doc_hash", "add_time", "saved_file_relpath"]);
 
         let currentDocId = null;
         let originalMetadata = {};
@@ -1168,12 +1222,45 @@
             }
         }
 
-        function downloadSourceFile(docId) {
+        async function downloadSourceFile(docId) {
             const url = `${API_URL}/document/${docId}/file`;
+
+            const res = await fetch(url, { cache: "no-store" });
+            if (!res.ok) {
+                const err = await res.text().catch(() => '');
+                alert('下载失败: ' + (err || res.status));
+                return;
+            }
+
+            // 1) 尝试从 Content-Disposition 取服务端给的 filename
+            const cd = res.headers.get('content-disposition') || '';
+            let filename = '';
+            const m = cd.match(/filename\*=UTF-8''([^;]+)|filename="([^"]+)"/i);
+            if (m) filename = decodeURIComponent(m[1] || m[2] || '');
+
+            // 2) 兜底：再去 metadata 拿 filename（可选）
+            if (!filename) {
+                const metaRes = await fetch(`${API_URL}/document/${docId}/metadata`);
+                if (metaRes.ok) {
+                    const meta = await metaRes.json();
+                    filename = meta?.metadata?.filename || '';
+                }
+            }
+            if (!filename) filename = `document-${docId}`;
+
+            const blob = await res.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
             const a = document.createElement('a');
-            a.href = url;
+            a.href = blobUrl;
+            a.download = filename;
+            document.body.appendChild(a);
             a.click();
+            a.remove();
+
+            URL.revokeObjectURL(blobUrl);
         }
+
 
         function closeSourceModal() {
             document.getElementById('sourceModal').style.display = 'none';
