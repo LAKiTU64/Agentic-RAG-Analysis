@@ -3,6 +3,8 @@ from fastapi import Request, UploadFile, File, HTTPException, APIRouter
 import tempfile
 import os
 
+from fastapi.responses import FileResponse
+
 router = APIRouter()
 
 
@@ -135,6 +137,89 @@ async def get_document_chunks(request: Request, doc_id: str):
         return {"chunks": chunks}
     except Exception as e:
         raise HTTPException(500, f"获取 chunks 失败: {str(e)}")
+
+
+def _get_media_type_for_preview(filename: str) -> str:
+    """
+    根据文件名后缀返回适合浏览器预览的 MIME 类型。
+    仅支持 .txt, .md, .json，其余返回 application/octet-stream（触发下载）。
+    """
+    ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+    if ext == "txt":
+        return "text/plain"
+    elif ext in ("md", "markdown"):
+        return "text/markdown"
+    elif ext == "json":
+        return "application/json"
+    else:
+        return "application/octet-stream"
+
+
+@router.get("/document/{doc_id}/file")
+async def download_document_file(request: Request, doc_id: str):
+    kb = _get_kb_from_request(request)
+    try:
+        uuid.UUID(doc_id)
+    except Exception:
+        raise HTTPException(400, "无效的 document_id")
+
+    # 获取文档元数据，从中提取 saved_file_relpath
+    meta_result = kb.get_document_metadata(doc_id)
+    if not meta_result["ok"]:
+        raise HTTPException(404, "文档不存在或未保存源文件")
+
+    rel_path = meta_result["metadata"].get("saved_file_relpath")
+    if not rel_path:
+        raise HTTPException(404, "该文档未保存源文件")
+
+    full_path = os.path.join(kb.file_store_directory, rel_path)
+    if not os.path.exists(full_path):
+        raise HTTPException(404, "源文件已丢失")
+
+    filename = os.path.basename(rel_path)
+    media_type = _get_media_type_for_preview(filename)
+
+    return FileResponse(
+        path=full_path,
+        filename=filename,  # 前端下载时显示原始文件名
+        media_type=media_type,
+    )
+
+
+@router.get("/document/{doc_id}/content")
+async def get_document_content(request: Request, doc_id: str):
+    kb = _get_kb_from_request(request)
+    try:
+        uuid.UUID(doc_id)
+    except Exception:
+        raise HTTPException(400, "无效的 document_id")
+
+    meta_result = kb.get_document_metadata(doc_id)
+    if not meta_result["ok"]:
+        raise HTTPException(404, "文档不存在或未保存源文件")
+
+    rel_path = meta_result["metadata"].get("saved_file_relpath")
+    if not rel_path:
+        raise HTTPException(404, "该文档未保存源文件")
+
+    full_path = os.path.abspath(os.path.join(kb.file_store_directory, rel_path))
+    if not full_path.startswith(os.path.abspath(kb.file_store_directory)):
+        raise HTTPException(403, "非法路径")
+    if not os.path.exists(full_path):
+        raise HTTPException(404, "源文件已丢失")
+
+    # 只允许查看 .txt / .md / .json
+    filename = os.path.basename(rel_path).lower()
+    if not any(filename.endswith(ext) for ext in (".txt", ".md", ".markdown", ".json")):
+        raise HTTPException(400, "仅支持查看 .txt / .md / .json 文件内容")
+
+    try:
+        with open(full_path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except UnicodeDecodeError:
+        raise HTTPException(400, "文件不是有效的文本格式")
+
+    return {"filename": os.path.basename(rel_path), "content": content}
 
 
 __all__ = ["router"]
