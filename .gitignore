@@ -108,3 +108,6 @@ wenying/**/sglang_overview.json
 
 # 向量库位置
 AI_Agent_Complete/.chroma_db
+
+# 上传文件位置
+AI_Agent_Complete/.upload_files
