@@ -59,6 +59,9 @@ CHUNK_LEVEL_METADATA_KEYS = {
     "embedding",  # 如果包含
 }
 
+# 定义受保护、不可被修改的字段
+PROTECTED_KEYS = {"document_id", "doc_hash", "add_time", "saved_file_relpath"}
+
 
 class VectorKBManager:
     """
@@ -296,7 +299,7 @@ class VectorKBManager:
                     {
                         "document_id": doc_uuid,  # 基于UUID的document_id，标记唯一性
                         "doc_hash": doc_hash,  # 内容哈希
-                        "filename": filename,  # 文件名
+                        "filename": filename,  # 用户可见的文件名，可被修改（上传以后，磁盘文件名不变）
                         "add_time": add_time,  # 添加时间
                         "saved_file_relpath": saved_file_info["rel_path"]
                         if saved_file_info
@@ -481,15 +484,14 @@ class VectorKBManager:
         """更新指定文档所有chunks元数据：支持 set(新增/修改) + delete(删除key)"""
         assert self.vectorstore is not None
 
-        protected_keys = {"document_id", "doc_hash", "add_time"}
         delete_keys = delete_keys or []
 
         # 过滤 set 中的 protected
         filtered_set = {
-            k: v for k, v in (set_metadata or {}).items() if k not in protected_keys
+            k: v for k, v in (set_metadata or {}).items() if k not in PROTECTED_KEYS
         }
         # 过滤 delete 中的 protected
-        filtered_delete = [k for k in delete_keys if k not in protected_keys]
+        filtered_delete = [k for k in delete_keys if k not in PROTECTED_KEYS]
 
         try:
             existing_data = self.vectorstore.get(
