@@ -512,6 +512,106 @@
             box-shadow: 0 4px 8px rgba(52, 152, 219, 0.15);
         }
 
+        /* 元数据表格样式 */
+        .doc-meta-table-container {
+            margin: 8px 0;
+            border: 1px solid #e1e4e8;
+            border-radius: 6px;
+            background: #ffffff;
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+            /* --- 核心修改区 --- */
+            display: block;
+            /* 改回 block，让它占据独立一行 */
+            width: 100%;
+            /* 尝试占满气泡的宽度 */
+            /* [关键参数] 这里控制总长度！ */
+            min-width: 700px;
+            /* ----------------- */
+        }
+
+        .doc-meta-table {
+            /* --- 核心修改区 --- */
+            width: 100%;
+            /* 强制表格占满容器的 600px 宽度 */
+            table-layout: auto;
+            /* 自动布局：列宽会根据内容多少自动分配 */
+            /* ----------------- */
+
+            border-collapse: collapse;
+            font-size: 12px;
+            /* 字体稍微回调一点，太小看着累 */
+        }
+
+        .doc-meta-table th {
+            background-color: #f6f8fa;
+            color: #586069;
+            font-weight: 600;
+            text-align: left;
+            padding: 5px 5px;
+            /* 稍微增加一点呼吸感 */
+            border-bottom: 1px solid #e1e4e8;
+            white-space: nowrap;
+            /* 表头不换行 */
+        }
+
+        .doc-meta-table td {
+            padding: 5px 5px;
+            border-bottom: 1px solid #eaecef;
+            color: #24292e;
+            vertical-align: middle;
+            white-space: nowrap;
+            line-height: 1.2;
+
+            /* [新增] 超长截断三件套 */
+            max-width: 120px;
+            /* 限制最大宽度，超过这个宽度的内容会被截断 */
+            overflow: hidden;
+            /* 隐藏超出部分 */
+            text-overflow: ellipsis;
+            /* 超出部分显示 "..." */
+        }
+
+        .doc-meta-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .doc-meta-table tr:hover {
+            background-color: #f1f8ff;
+        }
+
+        /* 文件名列 */
+        .doc-link-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 3px;
+            cursor: pointer;
+        }
+
+        .doc-icon {
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+
+        /* 2. 文件名专用样式 */
+        .doc-name {
+            color: #0366d6;
+            font-weight: 500;
+
+            /* [新增] 文件名也需要截断，且需要 block 或 inline-block 才能生效 */
+            display: inline-block;
+            max-width: 250px;
+            /* 文件名通常较长，给大一点的空间 */
+            overflow: hidden;
+            text-overflow: ellipsis;
+            vertical-align: bottom;
+            /* 对齐微调 */
+        }
+
+        .meta-empty {
+            color: #d1d5da;
+        }
+
         /* [新增] Modal 弹窗体系 (移植自 kb_manager.html) */
         .chunk-modal {
             position: fixed;
@@ -1093,18 +1193,34 @@
             scrollToBottom();
         }
 
-        // 格式化消息内容（支持Markdown + 自定义文档链接）
+        // 格式化消息内容（支持Markdown + 自定义文档表格）
         function formatMessageContent(content) {
             if (!content) return '';
 
-            // 1. 处理后端返回的自定义文档链接标签 <doc-link ...>...</doc-link>
-            //    将其转换为漂亮的按钮
-            let formatted = content.replace(
+            let formatted = content;
+
+            // 1. 处理新的表格标签 <doc-metadata-table>JSON</doc-metadata-table>
+            // 使用 replace 的回调函数来处理动态内容
+            formatted = formatted.replace(
+                /<doc-metadata-table>(.*?)<\/doc-metadata-table>/g,
+                function (match, jsonStr) {
+                    try {
+                        const data = JSON.parse(jsonStr);
+                        return renderDocMetadataTable(data);
+                    } catch (e) {
+                        console.error("解析表格数据失败", e);
+                        return '<div style="color:red">表格数据解析错误</div>';
+                    }
+                }
+            );
+
+            // 2. 兼容旧的按钮标签（如果还要保留兼容性的话，不保留可删除）
+            formatted = formatted.replace(
                 /<doc-link id="(.*?)" title="(.*?)">(.*?)<\/doc-link>/g,
                 '<button class="doc-ref-btn" onclick="previewDoc(\'$1\', \'$2\')">📄 $3</button>'
             );
 
-            // 2. 简单的 Markdown 格式化 (加粗/斜体/代码)
+            // 3. 简单的 Markdown 格式化
             formatted = formatted
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\*(.*?)\*/g, '<em>$1</em>')
@@ -1114,6 +1230,73 @@
             return formatted;
         }
 
+        // [新增] 渲染元数据表格
+        function renderDocMetadataTable(data) {
+            if (!Array.isArray(data) || data.length === 0) return '';
+
+            const columns = [
+                { key: 'model', label: 'model' },
+                { key: 'batch_size', label: 'batch_size' },
+                { key: 'input_len', label: 'input_len' },
+                { key: 'output_len', label: 'output_len' },
+                { key: 'gpu', label: 'gpu' },
+            ];
+
+            let html = '<div class="doc-meta-table-container"><table class="doc-meta-table">';
+
+            // 表头
+            html += '<thead><tr>';
+            html += '<th style="width: 35%">&nbsp;📂&nbsp;filename</th>'; // 给文件名多一点宽度
+            columns.forEach(col => {
+                html += `<th>${col.label}</th>`;
+            });
+            html += '</tr></thead>';
+
+            // [关键修正] 之前误写成了 html += 'tbody'; 导致页面直接显示文本
+            html += '<tbody>';
+
+            // ...前面的代码不变...
+
+            data.forEach(item => {
+                const docId = item.id;
+                const filename = item.filename || 'Unknown';
+
+                html += '<tr>';
+
+                // 第一列：文件名
+                // 注意：这里已经给 span 加了 title="${filename}"
+                html += `<td>
+                    <div class="doc-link-wrapper" onclick="previewDoc('${docId}', '${filename}')">
+                        <span class="doc-icon">📄</span>
+                        <span class="doc-name" title="${filename}">${filename}</span>
+                    </div>
+                </td>`;
+
+                // 后续动态列
+                columns.forEach(col => {
+                    let val = item[col.key];
+                    let displayVal = val; // 用于显示的文字
+
+                    if (val === null || val === undefined || val === '') {
+                        displayVal = '<span class="meta-empty">-</span>';
+                        val = ''; // 空值时 title 显示空
+                    }
+
+                    // [关键修改] 给 td 添加 title 属性，值为原始数据 val
+                    // 这样当内容被 "..." 截断时，鼠标放上去能看到完整内容
+                    html += `<td title="${val}">${displayVal}</td>`;
+                });
+
+                html += '</tr>';
+            });
+
+            // ...后面的代码不变...
+
+            // [关键修正] 闭合 tbody
+            html += '</tbody></table></div>';
+
+            return html;
+        }
         // 显示进度条
         function showProgress(progress, message) {
             hideProgress(); // 移除之前的进度条

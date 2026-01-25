@@ -505,14 +505,14 @@ class AIAgent:
                 )
 
             # =========================================================================
-            # [Step 2.5] 检查知识库是否有匹配的历史文档
+            # [Step 2.5] 检查知识库是否有匹配的历史文档 (修改版：返回JSON数据表格)
             # =========================================================================
             matching_docs_msg = ""
             try:
                 # 使用 parsed_raw (用户原始输入) 以避免默认值干扰
                 user_specified_params = parsed_raw.get("params", {}) or {}
 
-                # 1. 构造 Filter
+                # 1. 构造 Filter (逻辑保持不变)
                 strict_filter = {}
                 loose_filter = {}
 
@@ -527,7 +527,7 @@ class AIAgent:
                     ):
                         strict_filter[k] = user_specified_params[k]
 
-                # 2. 执行查询
+                # 2. 执行查询 (逻辑保持不变)
                 found_docs = []
                 match_type = "strict"
 
@@ -540,36 +540,42 @@ class AIAgent:
                     found_docs = self.kb.find_documents_by_metadata(loose_filter)
                     match_type = "loose"
 
-                print(f"[KB Debug] 命中数量: {len(found_docs)}")
-
                 # 3. 构造返回消息
                 if found_docs:
-                    links = []
-                    for doc in found_docs:
-                        d_id = doc.get("document_id")
-                        d_name = (
-                            doc.get("filename") or doc.get("title") or f"Doc-{d_id[:6]}"
-                        )
-                        # 构造前端 <doc-link> 标签
-                        display_name = (
-                            d_name if match_type == "strict" else f"{d_name} (同模型)"
-                        )
-                        links.append(
-                            f'<doc-link id="{d_id}" title="{d_name}">{display_name}</doc-link>'
+                    table_data = []
+                    for doc in found_docs[:10]:
+                        meta = doc  # doc 本身就是 metadata 字典
+
+                        # [修改前] 手动一个个挑字段，累且不灵活
+                        # entry = {
+                        #     "id": meta.get("document_id"),
+                        #     "filename": meta.get("filename") or ...
+                        #     "model": meta.get("model"),
+                        #     ...
+                        # }
+
+                        # [修改后]
+                        # 1. 先把所有元数据都拷进来 (这样前端想显示啥就能显示啥)
+                        entry = meta.copy()
+
+                        # 2. 补全/规范化几个核心字段 (防止元数据里没有这些key导致前端报错)
+                        entry["id"] = meta.get("document_id")
+                        entry["filename"] = (
+                            meta.get("filename") or meta.get("title") or "Unknown Doc"
                         )
 
-                    display_links = links[:3]
+                        table_data.append(entry)
+
+                    json_str = json.dumps(table_data, ensure_ascii=False)
+
                     intro = (
-                        "🎯 **发现完全匹配参数的历史报告** (推荐直接查看):"
+                        "🎯 **发现完全匹配参数的历史报告**:"
                         if match_type == "strict"
                         else f"📂 **未找到参数完全匹配的记录，但发现同模型({model_name})的相关文档**:"
                     )
 
-                    matching_docs_msg = f"\n\n{intro}\n" + "\n".join(
-                        [f"• {link}" for link in display_links]
-                    )
-                    if len(links) > 3:
-                        matching_docs_msg += f"\n*(...及其他 {len(links) - 3} 个)*"
+                    # 使用自定义标签包裹 JSON，方便前端正则提取
+                    matching_docs_msg = f"\n\n{intro}\n<doc-metadata-table>{json_str}</doc-metadata-table>"
                 else:
                     matching_docs_msg = f"\n\n📂 **知识库检索**: 未找到关于 `{model_name}` 的历史分析报告。"
 
