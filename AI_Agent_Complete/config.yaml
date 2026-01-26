@@ -17,8 +17,8 @@ models_path: "/workspaces/models/"
 # - Linux: "/data/models"
 
 # 本地LLM路径（必须配置）
-offline_qwen_path: "/workspaces/models/Qwen3-30B-A3B-Instruct-2507"
-# offline_qwen_path: "/workspaces/models/Qwen3-4B-Instruct-2507"
+# offline_qwen_path: "/workspaces/models/Qwen3-30B-A3B-Instruct-2507"
+offline_qwen_path: "/workspaces/models/Qwen3-4B-Instruct-2507"
 
 
 # ============================================================
@@ -28,8 +28,6 @@ vector_store:
   persist_directory: "/workspaces/ai-agent/AI_Agent_Complete/.chroma_db"
   embedding_model_path: "/workspaces/models/bge-small-zh-v1.5"
   file_store_directory: "/workspaces/ai-agent/AI_Agent_Complete/.upload_files"
-  chunk_size: 300
-  chunk_overlap: 100
   default_search_k: 8
   max_distance: 0.5 # 越小越严格
 
