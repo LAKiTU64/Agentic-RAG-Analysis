@@ -418,42 +418,6 @@
             }
         }
 
-        .typing-indicator {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            padding: 10px;
-        }
-
-        .typing-dot {
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--secondary-color);
-            animation: typing 1.4s infinite;
-        }
-
-        .typing-dot:nth-child(2) {
-            animation-delay: 0.2s;
-        }
-
-        .typing-dot:nth-child(3) {
-            animation-delay: 0.4s;
-        }
-
-        @keyframes typing {
-
-            0%,
-            60%,
-            100% {
-                transform: translateY(0);
-            }
-
-            30% {
-                transform: translateY(-10px);
-            }
-        }
-
         /* Markdown样式 */
         .message-content h1,
         .message-content h2,
@@ -484,32 +448,6 @@
 
         .message-content strong {
             font-weight: 600;
-        }
-
-
-        /* [新增] 文档引用按钮样式 */
-        .doc-ref-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            margin: 4px 6px 4px 0;
-            background: #fff;
-            color: var(--secondary-color);
-            border: 1px solid rgba(52, 152, 219, 0.3);
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9em;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
-        }
-
-        .doc-ref-btn:hover {
-            background: rgba(52, 152, 219, 0.08);
-            border-color: var(--secondary-color);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.15);
         }
 
         /* 元数据表格样式 */
@@ -778,8 +716,6 @@
             /* 略微调矮 */
             vertical-align: 1px;
         }
-
-
 
         /* --- 统一的悬停效果 --- */
         .rag-ref-btn:hover,
