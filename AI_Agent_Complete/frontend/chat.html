@@ -727,6 +727,140 @@
             font-family: monospace;
         }
 
+        /* --- RAG 引用样式 --- */
+
+        /* --- 底部引用容器 --- */
+        .rag-refs-container {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* --- 极简引用胶囊 (只显示序号) --- */
+        .rag-ref-btn,
+        .citation-mark {
+            /* 基础外观 */
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            color: var(--secondary-color);
+
+            /* 形状：小胶囊 */
+            border-radius: 12px;
+            padding: 0px 6px;
+            min-width: 24px;
+            height: 24px;
+
+            /* 字体与布局 */
+            font-size: 0.85em;
+            font-weight: 600;
+            font-family: monospace;
+            /* 用等宽字体让数字看起来更像代码引用 */
+
+            /* 居中 */
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        /* --- 文内专用微调 --- */
+        .citation-mark {
+            /* 文内引用可以更紧凑一点 */
+            margin: 1 8px;
+            height: 20px;
+            min-width: 20px;
+            /* 略微调矮 */
+            vertical-align: 1px;
+        }
+
+
+
+        /* --- 统一的悬停效果 --- */
+        .rag-ref-btn:hover,
+        .citation-mark:hover {
+            background-color: var(--secondary-color);
+            color: white;
+            border-color: var(--secondary-color);
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+        }
+
+        /* 激活/点击态 (可选) */
+        .rag-ref-btn:active {
+            transform: translateY(0);
+        }
+
+        /* 胶囊内的数字圆圈 */
+        .rag-ref-btn .ref-index {
+            background: #f1f8ff;
+            color: var(--secondary-color);
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: 700;
+            flex-shrink: 0;
+            border: 1px solid rgba(52, 152, 219, 0.2);
+        }
+
+        .rag-ref-btn:hover .ref-index {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        /* 胶囊内的文字 (预留，如果只显示数字，可以把这个隐藏或者写成 "来源 N") */
+        .rag-ref-btn .ref-text {
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        .ref-index {
+            background: var(--secondary-color);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+
+        .ref-filename {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* 查看全文的按钮 (在 Chunk Modal 中) */
+        .view-full-doc-btn {
+            margin-top: 15px;
+            padding: 8px 16px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9em;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .view-full-doc-btn:hover {
+            background-color: #2980b9;
+        }
+
         /* 简单的 Markdown 元素适配 */
         #docContent h1,
         #docContent h2,
@@ -1193,41 +1327,72 @@
             scrollToBottom();
         }
 
-        // 格式化消息内容（支持Markdown + 自定义文档表格）
         function formatMessageContent(content) {
             if (!content) return '';
 
-            let formatted = content;
+            try {
+                let formatted = content;
 
-            // 1. 处理新的表格标签 <doc-metadata-table>JSON</doc-metadata-table>
-            // 使用 replace 的回调函数来处理动态内容
-            formatted = formatted.replace(
-                /<doc-metadata-table>(.*?)<\/doc-metadata-table>/g,
-                function (match, jsonStr) {
+                // 1. 处理性能报告表格 (逻辑不变)
+                formatted = formatted.replace(/<doc-metadata-table>([\s\S]*?)<\/doc-metadata-table>/g, function (match, jsonStr) {
                     try {
-                        const data = JSON.parse(jsonStr);
-                        return renderDocMetadataTable(data);
-                    } catch (e) {
-                        console.error("解析表格数据失败", e);
-                        return '<div style="color:red">表格数据解析错误</div>';
+                        return renderDocMetadataTable(JSON.parse(jsonStr));
+                    } catch (e) { return ''; }
+                });
+
+                // 2. 提取 RAG 引用数据 (逻辑不变)
+                let ragRefsData = null;
+                formatted = formatted.replace(/<rag-refs>([\s\S]*?)<\/rag-refs>/g, function (match, jsonStr) {
+                    try {
+                        ragRefsData = JSON.parse(jsonStr);
+                        return '';
+                    } catch (e) { return ''; }
+                });
+
+                // 3. 文中高亮：将其替换为使用了 .citation-mark 类的胶囊
+                formatted = formatted.replace(/\[\[REF:\s*(\d+)\]\]/g, function (match, index) {
+                    if (ragRefsData) {
+                        const targetRef = ragRefsData.find(r => r.index == index);
+                        if (targetRef) {
+                            const safeItem = encodeURIComponent(JSON.stringify(targetRef)).replace(/'/g, "%27");
+                            // 这里我们不再用 [index]，直接显示 index 即可，UI 上已经是胶囊了
+                            return `<span class="citation-mark" onclick="previewChunk('${safeItem}')">${index}</span>`;
+                        }
                     }
+                    // 兜底显示
+                    return `<span class="citation-mark">${index}</span>`;
+                });
+
+                // 4. 基础 Markdown 格式化 (逻辑不变)
+                formatted = formatted
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/`(.*?)`/g, '<code>$1</code>')
+                    .replace(/\n/g, '<br>');
+
+                // 5. [修改] 底部引用按钮：极简模式
+                if (ragRefsData && Array.isArray(ragRefsData) && ragRefsData.length > 0) {
+                    let refsHtml = '<div class="rag-refs-container">';
+
+                    ragRefsData.forEach(item => {
+                        const safeItem = encodeURIComponent(JSON.stringify(item)).replace(/'/g, "%27");
+                        // [修改点]：这里不再包 span，直接放数字
+                        // title 属性保留文件名，鼠标悬停时能看到来源
+                        refsHtml += `
+                            <div class="rag-ref-btn" onclick="previewChunk('${safeItem}')" title="来源: ${item.filename}">
+                                ${item.index}
+                            </div>
+                        `;
+                    });
+                    refsHtml += '</div>';
+                    formatted += refsHtml;
                 }
-            );
 
-            // 2. 兼容旧的按钮标签（如果还要保留兼容性的话，不保留可删除）
-            formatted = formatted.replace(
-                /<doc-link id="(.*?)" title="(.*?)">(.*?)<\/doc-link>/g,
-                '<button class="doc-ref-btn" onclick="previewDoc(\'$1\', \'$2\')">📄 $3</button>'
-            );
+                return formatted;
 
-            // 3. 简单的 Markdown 格式化
-            formatted = formatted
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-                .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                .replace(/`(.*?)`/g, '<code>$1</code>')
-                .replace(/\n/g, '<br>');
-
-            return formatted;
+            } catch (e) {
+                console.error("渲染消息失败:", e);
+                return content.replace(/\n/g, '<br>');
+            }
         }
 
         // [新增] 渲染元数据表格
@@ -1715,6 +1880,58 @@
         // [新增] 关闭文档弹窗
         function closeDocModal() {
             document.getElementById('docModal').style.display = 'none';
+        }
+
+        // [新增] 预览 Chunk 详情
+        function previewChunk(encodedItem) {
+            try {
+                const item = JSON.parse(decodeURIComponent(encodedItem));
+                const modal = document.getElementById('docModal');
+                const titleEl = document.getElementById('docModalTitle');
+                const contentEl = document.getElementById('docContent');
+                const metaEl = document.getElementById('docMeta');
+
+                modal.style.display = 'flex';
+
+                // 设置标题
+                titleEl.textContent = `🔍 引用片段 #${item.index} (相似距离: ${item.score.toFixed(4)}【越小越好】)`;
+
+                // 隐藏元数据面板 (Chunk 预览暂不需要复杂的 meta 表格，或者你可以把 filename 放这里)
+                metaEl.style.display = 'block';
+                metaEl.innerHTML = `
+                    <div class="doc-meta-grid">
+                        <div class="meta-item">
+                            <span class="meta-key">来源文件</span>
+                            <span class="meta-val">${item.filename}</span>
+                        </div>
+                    </div>
+                `;
+
+                // 渲染内容 (Chunk 内容通常是纯文本或 Markdown)
+                let htmlContent = '';
+                if (window.marked && window.DOMPurify) {
+                    htmlContent = DOMPurify.sanitize(marked.parse(item.content));
+                } else {
+                    htmlContent = `<pre style="white-space:pre-wrap;">${item.content}</pre>`;
+                }
+
+                // 添加 "查看完整文档" 按钮
+                // 注意：这里调用现有的 previewDoc 函数
+                if (item.doc_id) {
+                    htmlContent += `
+                        <div style="margin-top: 20px; padding-top: 15px; border-top: 1px solid #eee;">
+                            <button class="view-full-doc-btn" onclick="previewDoc('${item.doc_id}', '${item.filename}')">
+                                📄 跳转阅读完整文档
+                            </button>
+                        </div>
+                    `;
+                }
+
+                contentEl.innerHTML = htmlContent;
+
+            } catch (e) {
+                console.error("Chunk preview failed", e);
+            }
         }
 
         // [新增] 点击遮罩层关闭弹窗

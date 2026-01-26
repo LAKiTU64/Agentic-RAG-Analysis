@@ -623,53 +623,73 @@ class AIAgent:
         )
         search_query = parsed_raw.get("search_query") or message
 
-        # debug用：打印重写后的query和用于元数据过滤的where_filter
-        print(f"search_query: {search_query}")
-        print(f"where_filter: {where_filter}")
-
         retrieved_contexts = self.kb.search(
             query=search_query, where_filter=where_filter
         )
 
-        # Step 2: 构建 RAG 上下文和历史对话
-        rag_context = ""
+        # Step 2: 构建 RAG 上下文和引用数据结构
+        rag_context_str = ""
+        references_data = []
+
         if retrieved_contexts:
-            rag_snippets = [
-                f"【文档片段 {i + 1}】\n{res['content']}"
-                for i, res in enumerate(retrieved_contexts)
-            ]
-            rag_context = "\n\n".join(rag_snippets)
-        # debug用：打印RAG召回结果
-        # print(rag_context)
+            context_parts = []
+            for i, res in enumerate(retrieved_contexts):
+                index = i + 1
+                content = res.get("content", "").strip()
+                filename = res.get("filename", "未知文档")
+                doc_id = res.get("document_id", "")
+
+                # [修改点 1] 使用更具区分度的标记 [[REF:x]]，防止与 [11] 混淆
+                context_parts.append(
+                    f"========== 片段 [[REF:{index}]] (来源: {filename}) ==========\n{content}\n"
+                )
+
+                references_data.append(
+                    {
+                        "index": index,
+                        "filename": filename,
+                        "content": content,
+                        "score": res.get("score", 0),
+                        "doc_id": doc_id,
+                    }
+                )
+
+            rag_context_str = "\n".join(context_parts)
 
         history_str = self._format_history_str(self.chat_history, limit=1)
 
-        # Step 3: 严格约束的 RAG-QA 生成
+        # Step 3: 严格约束的 RAG-QA 生成 (Prompt 强化)
         prompt = f"""
             你是一个严谨的数据分析员。你必须完全依据【参考资料】回答用户关于 GPU 性能数据的提问。
 
             ### 参考资料
-            {rag_context if rag_context else "（警告：未检索到相关文档，可能需要告知用户资料缺失）"}
+            {rag_context_str if rag_context_str else "（警告：未检索到相关文档）"}
 
-            ### 用户问题（主要的用户意图依据）
+            ### 用户问题
             {message}
 
-            ### 对话历史（次要、可忽略的用户意图补充）
+            ### 对话历史
             {history_str if history_str else "（无历史记录）"}
 
-            ### 严格约束 (Strict Rules)
-            1. **数据精确性**：如果用户询问某个 Kernel 的具体指标（如瓶颈数、带宽），**必须**在参考资料中找到**完全匹配**的 Kernel 名称后才能回答。
-            2. **拒绝猜测**：如果资料里有 "Kernel A" 和 "Kernel B"，但用户问 "Kernel C"，你必须回答："资料中未找到 Kernel C 的数据"。**严禁**把 A 的数据安在 C 上。
-            3. **原文引用**：回答时尽量使用资料中的原话或数据。
-            4. **空值处理**：如果资料为空或不相关，直接回答：“抱歉，知识库中没有相关信息。”
+            ### ⚠️ 严格引用规则 (Strict Rules)
+            1. **引用格式**：每当你使用资料中的数据或结论时，**必须**在句子末尾加上 `[[REF:x]]`。
+            2. **编号来源**：`x` 必须对应资料开头的 `========== 片段 [[REF:x]]` 中的数字。
+            3. **禁止混淆**：资料内容中可能包含 "[NSYS-KERNEL-001]" 或 "[]" 类似的编号，这些是**内容**，不是**引用来源**。
+            4. **留存间距**：如果一个句子末尾有多个引用，请连续书写，例如 `...数据结论。[[REF:1]][[REF:2]]`。
+            5. **拒绝编造**：如果资料中没有答案，直接回答“根据现有资料未找到相关数据”。
 
             ### 回答：
         """.strip()
 
         try:
             answer = self.llm_client.generate(prompt, max_tokens=1024).strip()
-            ref_count = len(retrieved_contexts) if retrieved_contexts else 0
-            return f"🤖 **RAG-QA**\n{answer}\n\n---\n💡 *基于 {ref_count} 条知识库片段回答*"
+
+            # 序列化引用数据，准备传给前端
+            refs_json = json.dumps(references_data, ensure_ascii=False)
+
+            # 构造特殊的 XML 标签，供前端解析
+            return f"{answer}\n\n<rag-refs>{refs_json}</rag-refs>"
+
         except Exception as e:
             return f"❌ **RAG-QA生成失败**: {str(e)}"
 
