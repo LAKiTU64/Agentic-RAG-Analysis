@@ -21,8 +21,8 @@ BEIJING_TZ = timezone(timedelta(hours=8))
 # 分块策略
 CHUNKING_STRATEGY = {
     "default": {
-        "chunk_size": 300,
-        "chunk_overlap": 60,
+        "chunk_size": 1000,
+        "chunk_overlap": 0,
         "add_start_index": True,
         "separators": [
             "\n# ",
@@ -74,8 +74,6 @@ class VectorKBManager:
         self.embedding_model_path = kb_config.get("embedding_model_path")
         self.persist_directory = kb_config.get("persist_directory")
         self.file_store_directory = kb_config.get("file_store_directory")
-        self.chunk_size = kb_config.get("chunk_size")
-        self.chunk_overlap = kb_config.get("chunk_overlap")
         self.default_search_k = kb_config.get("default_search_k", 8)
         self.max_distance = kb_config.get("max_distance", 0.5)
 
@@ -145,7 +143,6 @@ class VectorKBManager:
         *,
         document_id: str,
         filename: str,
-        overwrite: bool = False,
     ) -> Dict[str, str]:
         """
         保存原始文件用于预览/下载
@@ -162,8 +159,8 @@ class VectorKBManager:
 
         dst_path = os.path.join(doc_dir, safe_name)
 
-        if os.path.exists(dst_path) and not overwrite:
-            # 若不允许覆盖，就做一个不冲突名字
+        if os.path.exists(dst_path):
+            # 避免文件名冲突
             stem = pathlib.Path(safe_name).stem
             suffix = pathlib.Path(safe_name).suffix
             dst_path = os.path.join(doc_dir, f"{stem}_{uuid.uuid4().hex[:8]}{suffix}")
@@ -177,24 +174,20 @@ class VectorKBManager:
         self,
         file_path: str,
         document_id: Optional[str] = None,
-        overwrite_document_id: Optional[str] = None,
         chunking_strategy: Optional[str] = None,
         runtime_info: Optional[Dict[str, Any]] = None,
         override_filename: Optional[str] = None,
         save_file: bool = True,
-        overwrite_saved_file: bool = True,
     ) -> Dict[str, Any]:
         """
         导入文档到向量库（切片后入库）。
 
         参数：
         - document_id: 可选，传入则使用指定 UUID（例如来自上层文档表）
-        - overwrite_document_id: 可选，如果想“更新”某个已有文档，传它会先按该 id 删除旧 chunks，再写入新 chunks
         - chunking_strategy: 可选，指定分块策略，默认策略default，后续将会维护其他策略
         - runtime_info: 可选，传入的sglang运行时元数据字典，写入每个 chunk 的 metadata 中
         - override_filename: 可选，覆盖文件名（用于前端展示）
         - save_file: 可选，是否保存原始文件（用于预览/下载）
-        - overwrite_saved_file: 可选，是否覆盖保存的已保存文件（用于更新）
 
         返回：
         - 结构化结果，便于 Web/接口层使用
@@ -212,57 +205,25 @@ class VectorKBManager:
         doc_hash = self._compute_file_hash(file_path)
 
         # 生成/校验 UUID
-        if overwrite_document_id:
-            # 如果是更新文档，校验是否是合法UUID
-            try:
-                uuid.UUID(overwrite_document_id)
-            except Exception:
-                return {
-                    "ok": False,
-                    "error": "overwrite_document_id is not a valid UUID",
-                }
-            doc_uuid = overwrite_document_id
+        if document_id is None:
+            # 没传参document_id的情况下生成新UUID
+            doc_uuid = str(uuid.uuid4())
         else:
-            # 如果是直接添加文档
-            if document_id is None:
-                # 没传参document_id的情况下生成新UUID
-                doc_uuid = str(uuid.uuid4())
-            else:
-                # 传参document_id时，校验是否是合法UUID
-                try:
-                    uuid.UUID(document_id)
-                except Exception:
-                    return {"ok": False, "error": "document_id is not a valid UUID"}
-                doc_uuid = document_id
-
-        # 如果是更新文档，先删旧 chunks（按 document_id 删除）
-        if overwrite_document_id:
+            # 传参document_id时，校验是否是合法UUID
             try:
-                self.vectorstore.delete(where={"document_id": doc_uuid})
-            except Exception as delete_error:
-                return {
-                    "ok": False,
-                    "document_id": doc_uuid,
-                    "filename": filename,
-                    "error": f"failed to delete old chunks: {delete_error}",
-                }
+                uuid.UUID(document_id)
+            except Exception:
+                return {"ok": False, "error": "document_id is not a valid UUID"}
+            doc_uuid = document_id
 
         # 保存原始文件（用于预览/下载）
         saved_file_info: Optional[Dict[str, str]] = None
         if save_file:
             try:
-                # 如果是更新文档：先清空旧文件目录，避免旧文件残留
-                if overwrite_document_id:
-                    doc_dir = os.path.join(self.file_store_directory, doc_uuid)
-                    if os.path.exists(doc_dir):
-                        shutil.rmtree(doc_dir)
-                    os.makedirs(doc_dir, exist_ok=True)
-
                 saved_file_info = self._save_uploaded_file(
                     file_path,
                     document_id=doc_uuid,
                     filename=filename,
-                    overwrite=overwrite_saved_file if overwrite_document_id else False,
                 )
             except Exception as e:
                 return {
@@ -578,59 +539,6 @@ class VectorKBManager:
             shutil.rmtree(self.persist_directory)
         self._load_or_create(is_reset=False)
 
-    def as_retriever(self, **kwargs):
-        from langchain_core.documents import Document
-        from langchain_core.retrievers import BaseRetriever
-        from pydantic import PrivateAttr
-        from typing import Optional, Dict, Any
-
-        class KBRetriever(BaseRetriever):
-            _kb_manager: "VectorKBManager" = PrivateAttr()
-            k: int = self.default_search_k
-            max_distance: float = self.max_distance
-
-            def __init__(self, kb_manager, k, max_distance, **data):
-                super().__init__(**data)
-                self._kb_manager = kb_manager
-                self.k = k
-                self.max_distance = max_distance
-
-            def _get_relevant_documents(
-                self,
-                query: str,
-                *,
-                run_manager=None,  # LangChain 内部参数，可忽略
-                **kwargs,
-            ) -> List[Document]:
-                # 从 kwargs 中提取 filter（符合 LangChain 规范）
-                where_filter: Optional[Dict[str, Any]] = kwargs.get("filter")
-
-                search_results = self._kb_manager.search(
-                    query,
-                    k=self.k,
-                    max_distance=self.max_distance,
-                    where_filter=where_filter,  # 👈 透传！
-                )
-                return [
-                    Document(
-                        page_content=res["content"],
-                        metadata={
-                            "document_id": res.get("document_id"),
-                            "doc_hash": res.get("doc_hash"),
-                            "filename": res.get("filename"),
-                            "add_time": res.get("add_time"),
-                            "score": res.get("score"),
-                            "start_index": res.get("start_index"),
-                            "source": res.get("source"),
-                        },
-                    )
-                    for res in search_results
-                ]
-
-        k = kwargs.get("k", self.default_search_k)
-        max_distance = kwargs.get("max_distance", self.max_distance)
-        return KBRetriever(kb_manager=self, k=k, max_distance=max_distance)
-
 
 if __name__ == "__main__":
     # 1. 初始化
@@ -695,21 +603,8 @@ if __name__ == "__main__":
             f"score={res.get('score')}"
         )
 
-    # 6. 测试 as_retriever + filter（LangChain 标准用法）
-    print("\nStep 6: 测试 as_retriever + filter\n")
-    retriever = kb.as_retriever(k=3, max_distance=0.6)
-    docs = retriever.invoke(
-        "性能瓶颈",
-        filter={"input_len": {"$gt": 511}},  # 利用 runtime_info 中的 accuracy
-    )
-    print(f"Retriever 返回 {len(docs)} 个文档")
-    for doc in docs:
-        print(
-            f" - score={doc.metadata.get('score')}, accuracy={doc.metadata.get('accuracy')}"
-        )
-
-    # Step 7: 检查第一个文档的第一个 chunk 的 start_index
-    print("\nStep 7: 检查第一个 chunk 的 start_index\n")
+    # 6: 检查第一个文档的第一个 chunk 的 start_index
+    print("\nStep 6: 检查第一个 chunk 的 start_index\n")
     overview = kb.get_overview()
     if overview["documents"]:
         first_doc_id = overview["documents"][0]["document_id"]
