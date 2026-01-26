@@ -67,8 +67,6 @@ class AIAgent:
         # kb_config = config.get("vector_store", {})
         # self.embedding_model = kb_config.get("embedding_model")
         # self.persist_directory = kb_config.get("persist_directory")
-        # self.chunk_size = kb_config.get("chunk_size")
-        # self.chunk_overlap = kb_config.get("chunk_overlap")
         # self.default_search_k = kb_config.get("default_search_k", 8)
         # self.max_distance = kb_config.get("max_distance", 0.5)
         self.kb = VectorKBManager(config=config)
@@ -82,6 +80,15 @@ class AIAgent:
             "analysis": "用户希望**立即执行**性能分析任务（如“跑一下qwen”、“nsys/ncu分析”）。必须包含**动作意图**（运行/测试/分析等）。",
             "rag-qa": "用户在**询问知识、数据或建议**（如“瓶颈是什么”、“推荐batch_size”、“某个Kernel的运行情况”）。无执行意图。",
             "chat": "打招呼、感谢、闲聊以及一切无法归类的内容（如“你好”、“你是谁”）。",
+        }
+
+        # 允许的 where_filter 过滤字段
+        self.allowed_where_filter_keys = {
+            "model",
+            "batch_size",
+            "input_len",
+            "output_len",
+            "gpu",
         }
 
         # 待确认的分析任务缓存（用于分析前二次确认）
@@ -262,7 +269,7 @@ class AIAgent:
             {user_query}
             
             ### 5. 最近对话历史（可能为空）
-            #### tips: 仅当用户提到“之前/上一次/上个问题/刚才/沿用/跟前面一样”等需要你查询对话历史的关键词时，才可以纳入参考，否则忽略对话历史
+            #### tips: 仅当用户提到“之前/上一次/上个问题/刚才/沿用/跟前面一样”等需要你查询对话历史的关键词时，才可以纳入参考，**否则必须忽略最近对话历史**
             {history_str if history_str else "对话历史为空。"}
 
             ### 6. 你的JSON输出：
@@ -417,24 +424,23 @@ class AIAgent:
         # 使用列表收集所有的独立条件
         conditions = []
 
-        # 1) 顶层字段（除了 params）
-        for k, v in raw.items():
-            if k == "params":
-                continue
-            if not is_empty(v):
-                conditions.append({k: coerce_scalar(v)})
+        # 1) 数据拍平，将顶层字段和 params 内部字段合并到同一个层级
+        flat_candidates = raw.copy()
+        # 提取并移除 params 字典，准备合并
+        nested_params = flat_candidates.pop("params", {})
+        if isinstance(nested_params, dict):
+            flat_candidates.update(nested_params)
 
-        # 2) params 拍平
-        params = raw.get("params")
-        if isinstance(params, dict):
-            for k, v in params.items():
-                if not is_empty(v):
-                    conditions.append({k: coerce_scalar(v)})
+        # 2) 统一白名单过滤 (Filter)
+        conditions = []
+        for k, v in flat_candidates.items():
+            # 核心逻辑：必须在白名单内 且 值不为空
+            if k in self.allowed_where_filter_keys and not is_empty(v):
+                conditions.append({k: coerce_scalar(v)})
 
         # 3) 构建最终 filter
         if not conditions:
             return None
-
         # 如果只有一个条件，直接返回该字典
         if len(conditions) == 1:
             return conditions[0]
