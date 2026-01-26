@@ -17,8 +17,8 @@ models_path: "/workspaces/models/"
 # - Linux: "/data/models"
 
 # 本地LLM路径（必须配置）
-# offline_qwen_path: "/workspaces/models/Qwen3-30B-A3B-Instruct-2507"
-offline_qwen_path: "/workspaces/models/Qwen3-4B-Instruct-2507"
+offline_qwen_path: "/workspaces/models/Qwen3-30B-A3B-Instruct-2507"
+# offline_qwen_path: "/workspaces/models/Qwen3-4B-Instruct-2507"
 
 
 # ============================================================

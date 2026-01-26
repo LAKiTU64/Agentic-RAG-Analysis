@@ -1,10 +1,13 @@
-# 集成性能分析报告
+# 一、集成性能分析报告概览
 
 - **生成时间**: 2026-01-14
+- **硬件环境**: nvidia_H800_SXM5_80G
+- **batch_size**: 1
+- **input_len**: 1024
+- **output_len**: 1
 
----
 
-## 一、Roofline 预测与实测指标
+# 二、Roofline预测与实测指标
 
 ### 1) Roofline预测
 - **硬件**: nvidia_H800_SXM5_80G
@@ -22,20 +25,18 @@
 - **利用率**: 计算 81.3%, 内存 8.4%
 - **差异**: 性能差 -18.7%, 强度差 710.2%, 边界判断 match
 
----
 
-## 二、Nsys 全局性能概览
+# 三、Nsys全局分析
+
+## 1) Nsys性能分析概览
 
 - **总 kernels 数量**: 13
 - **总 kernel 执行时间**: 0.79 ms
 - **Layer[0]#Run[1] 范围持续时间**: 76.02 ms
 - **空泡率**: 98.96%
 
----
-
-## 三、Nsys Kernel 列表
+## 2) Nsys Kernel列表
  
-
 ### [NSYS-KERNEL-001] 
 - **kernel_alias**: `RMSNormKernel`
 - **kernel_full_name**: `void flashinfer::norm::RMSNormKernel<(unsigned int)8, __half>(T2 *, T2 *, T2 *, unsigned int, unsigned int, unsigned int, float, float)`
@@ -114,9 +115,8 @@
 - **执行时间**: 0.132 ms
 - **时间占比**: 16.65%
 
----
 
-## 三、NCU 深度分析结果（带别名）
+# 四、NCU深度分析
 
 ### [NCU-KERNEL-001] 
 - **kernel_alias**: `RMSNormKernel`
