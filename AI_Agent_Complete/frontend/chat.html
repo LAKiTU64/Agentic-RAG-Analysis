@@ -1286,7 +1286,7 @@
                 });
 
                 // 3. 文中高亮：将其替换为使用了 .citation-mark 类的胶囊
-                formatted = formatted.replace(/\[\[REF:\s*(\d+)\]\]/g, function (match, index) {
+                formatted = formatted.replace(/⁅⁅REF:\s*(\d+)⁆⁆/g, function (match, index) {
                     if (ragRefsData) {
                         const targetRef = ragRefsData.find(r => r.index == index);
                         if (targetRef) {
