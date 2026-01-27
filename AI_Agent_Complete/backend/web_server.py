@@ -5,6 +5,12 @@ AI Agent Web服务器
 """
 
 import os
+import time
+
+# 定义北京时间
+os.environ["TZ"] = "Asia/Shanghai"
+time.tzset()
+
 import sys
 import json
 import asyncio
@@ -28,8 +34,6 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from utils.nsys_to_ncu_analyzer import NSysToNCUAnalyzer
 
-# 定义北京时间
-BEIJING_TZ = timezone(timedelta(hours=8))
 
 # # 添加路径（旧）
 # sys.path.insert(0, str(Path(__file__).parent))
@@ -175,7 +179,7 @@ class AnalysisJob:
         self.error: Optional[str] = None
         self.output_dir: Optional[str] = None
         self.artifacts: Dict[str, Any] = {}
-        self.started_at = datetime.now(BEIJING_TZ).isoformat()
+        self.started_at = datetime.now().isoformat()
         self.finished_at: Optional[str] = None
 
 
@@ -302,7 +306,7 @@ async def websocket_endpoint(websocket: WebSocket, session_id: str):
 请告诉我您的分析需求！例如：
 "分析 llama-7b 模型，batch_size=1"
 """,
-            "timestamp": datetime.now(BEIJING_TZ).isoformat(),
+            "timestamp": datetime.now().isoformat(),
         },
     )
 
@@ -333,7 +337,7 @@ async def handle_websocket_message(session_id: str, message_data: dict):
 
     elif message_type == "ping":
         await manager.send_message(
-            session_id, {"type": "pong", "timestamp": datetime.now(BEIJING_TZ).isoformat()}
+            session_id, {"type": "pong", "timestamp": datetime.now().isoformat()}
         )
 
 
@@ -361,7 +365,7 @@ async def process_user_message(
                     f"• 选择的API: **{api_label}**\n"
                     f"• 请求内容: {message}"
                 ),
-                "timestamp": datetime.now(BEIJING_TZ).isoformat(),
+                "timestamp": datetime.now().isoformat(),
             },
         )
 
@@ -378,7 +382,7 @@ async def process_user_message(
             {
                 "type": "assistant_message",
                 "content": response,
-                "timestamp": datetime.now(BEIJING_TZ).isoformat(),
+                "timestamp": datetime.now().isoformat(),
             },
         )
 
@@ -388,7 +392,7 @@ async def process_user_message(
             {
                 "type": "error",
                 "content": f"❌ 处理失败: {str(e)}",
-                "timestamp": datetime.now(BEIJING_TZ).isoformat(),
+                "timestamp": datetime.now().isoformat(),
             },
         )
 
@@ -762,7 +766,7 @@ async def health_check():
     """健康检查"""
     return {
         "status": "healthy",
-        "timestamp": datetime.now(BEIJING_TZ).isoformat(),
+        "timestamp": datetime.now().isoformat(),
         "active_connections": len(manager.active_connections),
         "agent_ready": agent is not None,
         "config_loaded": CONFIG is not None,
@@ -913,7 +917,7 @@ async def submit_analysis(req: AnalysisSubmitRequest):
             job.status = "error"
             job.error = str(e)
         finally:
-            job.finished_at = datetime.now(BEIJING_TZ).isoformat()
+            job.finished_at = datetime.now().isoformat()
 
     threading.Thread(target=_worker, daemon=True).start()
     return {"job_id": job.job_id, "status": job.status}
